@@ -13,18 +13,22 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	private BufferedImage background, title, optionImage;
 	private BufferedImage [] optionSprites;
 	private JButton [] optionButtons;
-
-	public MainMenu()
+	private TrailBlazer tb;
+	
+	
+	public MainMenu(TrailBlazer tb)
 	{
+		this.tb=tb;
+		
 		setFocusable(true);
 
 		optionSprites = new BufferedImage[8];
-		optionButtons = new JButton[4];
-
 		loadSprites();
 		
-		this.setLayout(null);
 		
+		this.setLayout(null);
+		optionButtons = new JButton[4];
+
 		
 		for (int i = 0; i < 4; i++)
 		{
@@ -80,17 +84,20 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		for (int i = 0; i < optionButtons.length; i++)
+		
+
+		if (e.getSource() == optionButtons[0])
 		{
-			if (e.getSource() == optionButtons[0])
-			{
-				TrailBlazer.changeCard(2);
-			}
-			if (e.getSource() == optionButtons[3])
-			{
-				System.exit(0);
-			}
+			tb.newLevel(2);
+			tb.changeCard("2");
 		}
+		
+		if (e.getSource() == optionButtons[3])
+		{
+			System.exit(0);
+		}
+	
+		
 	}
 	
 	

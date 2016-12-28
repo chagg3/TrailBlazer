@@ -7,9 +7,9 @@ import java.awt.event.ActionListener;
 
 public class TrailBlazer extends JFrame  
 {
-    private static JPanel cardPanel;
+    private JPanel cardPanel;
     private JPanel mainMenu, levelSelect, gamePlay;
-    private static CardLayout cardLayout = new CardLayout();
+    private CardLayout cardLayout = new CardLayout();
 
     public TrailBlazer()
     {
@@ -18,33 +18,34 @@ public class TrailBlazer extends JFrame
     	cardPanel = new JPanel();
     	cardPanel.setLayout(cardLayout);
     	
-    	mainMenu = new MainMenu();
-        cardPanel.add(mainMenu, "1");
+    	mainMenu = new MainMenu(this);
+        cardPanel.add(mainMenu, "main");
         
-    	gamePlay = new GamePlay();
-    	cardPanel.add(gamePlay, "2");
+    	//gamePlay = new GamePlay(1);
+    	//cardPanel.add(gamePlay, "2");
     	
         add(cardPanel);
     }
-    /*
-    public void newLevel(int k)
+    
+    public  void newLevel(int k)
     {
-    	gamePlay = new GamePlay();
+    	gamePlay = new GamePlay(k, this);
     	cardPanel.add(gamePlay, "2");
     }
-    public void removeLevel()
+    
+    
+    public  void removeLevel()
     {
     	cardLayout.removeLayoutComponent(gamePlay);
     }
-    */
-	public static void changeCard(int k)
+    
+    
+	public  void changeCard(String k)
 	{
-		if (k==1)
-			cardLayout.show(cardPanel, "1");
-		else if (k==2)
-			cardLayout.show(cardPanel, "2");
-
+		cardLayout.show(cardPanel, k);
 	}
+	
+	
     public static void main(String args[])
     {
         TrailBlazer app = new TrailBlazer();
