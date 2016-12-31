@@ -1,11 +1,11 @@
 package trailblazer;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
+import java.util.ArrayList;
 
 public class Player 
 {
-	private boolean left, right, 
+	public boolean left, right, 
 	                crouch, 
                     inAir, 
                     isDead, hasWon, 
@@ -14,12 +14,12 @@ public class Player
                     isDeadScreen, hasWonScreen, 
                     cheat;
 	
-	private int x, y;
+	public int x, y;
 	private int hSpeed = 0, ySpeed = 0;
 	  
-	public int acceleration = 3, friction = 1, gravForce = 1;
+	private double acceleration = 1, friction = 1, gravForce = 1;
 	private int maxHSpeed = 8, minHSpeed = -8;
-	private int minYSpeed = -16, maxYSpeed = 30;
+	private int minYSpeed = -20, maxYSpeed = 26;
 	  
 	public Player(int x, int y)
 	{
@@ -48,6 +48,7 @@ public class Player
 	public void jump()
 	{
 		ySpeed = minYSpeed;
+		inAir = true;
 	}
 	public void gravity()
 	{
@@ -56,25 +57,82 @@ public class Player
 		else
 			ySpeed += gravForce;
 	}
-	public void tick()
+	public void checkXCol(ArrayList<ArrayList<Character>> charMap)
 	{
-		if (right)
+		Rectangle newY = new Rectangle(x + hSpeed, y, 40,40);
+		Rectangle compare;
+		for (int i = 0; i < charMap.size(); i++)
 		{
-			moveR();
+			for (int j = 0; j < charMap.get(i).size(); j++)
+			{
+				if (charMap.get(i).get(j) != '0')
+				{
+					compare = new Rectangle(j*48, i*48, 48, 48);
+					
+					if (newY.intersects(compare))
+					{
+						if (hSpeed < 0)
+						{
+							x = (j + 1)*48 ;
+						}
+						else if (hSpeed > 0)
+						{
+							x = (j - 1)*48 + 8;
+						}
+						hSpeed= 0;
+						
+
+					}
+				}
+			}
 		}
-		if (left)
+	}
+	public void checkYCol(ArrayList<ArrayList<Character>> charMap)
+	{
+		//int newY = y + ySpeed;
+		Rectangle newY = new Rectangle(x, y + ySpeed, 40,40);
+		Rectangle compare;
+		for (int i = 0; i < charMap.size(); i++)
 		{
-			moveL();
+			for (int j = 0; j < charMap.get(i).size(); j++)
+			{
+				if (charMap.get(i).get(j) != '0')
+				{
+					compare = new Rectangle(j*48, i*48, 48, 48);
+					
+					if (newY.intersects(compare))
+					{
+						if (ySpeed < 0)
+						{
+							y = (i + 1)*48 ;
+						}
+						else if (ySpeed > 0)
+						{
+							y = (i - 1)*48 + 8;
+						}
+						inAir = false;
+						ySpeed= 0;
+						
+
+					}
+				}
+			}
 		}
 		
-		//gravity();
-		if (!left && !right) //if the player is not actively trying to move, apply friction
-			friction();
+		
+	}
+	public void tick()
+	{
+
 		x += hSpeed;
 		y += ySpeed;
 	}
 	public void draw(Graphics g)
 	{
+
+		g.setColor(Color.RED);
+		g.fillRect(x+hSpeed, y+ySpeed, 40, 40);
+		
 		g.setColor(Color.BLUE);
 		g.fillRect(x, y, 40, 40);
 	}

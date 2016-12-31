@@ -21,13 +21,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		this.tb = tb;
 		
 		loadMap(1);
-		louis = new Player(0,0);
+		louis = new Player(100,100);
 		
 		setFocusable(true);
 		addKeyListener(this);
 		
 		
-		time = new Timer(17,this);
+		time = new Timer(17, this);
 		time.start();
 		
 		
@@ -40,6 +40,23 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	}
 	public void actionPerformed(ActionEvent e) 
 	{
+		if (louis.right)
+		{
+			louis.moveR();
+		}
+		if (louis.left)
+		{
+			louis.moveL();
+		}
+		if (!louis.left && !louis.right) //if the player is not actively trying to move, apply friction
+			louis.friction();
+		
+		louis.gravity();
+		
+		louis.checkYCol(charMap);
+		louis.checkXCol(charMap);
+		
+		
 		louis.tick();
 		repaint();
 	}
@@ -48,12 +65,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		super.paintComponent(g);
 		
 		for (int i = 0; i < charMap.size(); i++)
+		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
 				if (charMap.get(i).get(j) != '0')
 					g.fillRect(j * 48, i * 48, 48, 48);
 			}
-		
+		}
 		louis.draw(g);
 		
 	}
@@ -75,7 +93,8 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE)
 		{
-			louis.jump();
+			if (!louis.inAir)
+				louis.jump();
 		}
 	}
 	public void keyReleased(KeyEvent e) 
