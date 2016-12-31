@@ -3,10 +3,8 @@ package trailblazer;
 import java.awt.Graphics;
 import java.awt.event.*;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GamePlay extends JPanel implements KeyListener, ActionListener
@@ -23,7 +21,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		loadMap(1);
 		louis = new Player(100,100);
 		
-		setFocusable(true);
+		//setFocusable(true);
 		addKeyListener(this);
 		
 		
@@ -82,16 +80,15 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			time.stop();
 			tb.removeLevel();
 		}
-		if (e.getKeyCode() == KeyEvent.VK_LEFT)
+		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
 		{
 			louis.setLeft(true);
 		}
-		if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 		{
 			louis.setRight(true);
 		}
-		
-		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE)
+		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_W)
 		{
 			if (!louis.inAir)
 				louis.jump();
@@ -99,11 +96,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	}
 	public void keyReleased(KeyEvent e) 
 	{
-		if (e.getKeyCode() == KeyEvent.VK_LEFT)
+		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
 		{
 			louis.setLeft(false);
 		}
-		if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 		{
 			louis.setRight(false);
 		}

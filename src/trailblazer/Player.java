@@ -15,11 +15,12 @@ public class Player
                     cheat;
 	
 	public int x, y;
-	private int hSpeed = 0, ySpeed = 0;
+	private int hSpeed = 0, vSpeed = 0;
 	  
-	private double acceleration = 1, friction = 1, gravForce = 1;
-	private int maxHSpeed = 8, minHSpeed = -8;
-	private int minYSpeed = -20, maxYSpeed = 26;
+	final private int sideLength = 38;
+	final private int acceleration = 2, friction = 1, gravForce = 1;
+	final private int minHSpeed = -6, maxHSpeed = 6;
+	final private int minVSpeed = -20, maxVSpeed = 26;
 	  
 	public Player(int x, int y)
 	{
@@ -47,19 +48,20 @@ public class Player
 	}
 	public void jump()
 	{
-		ySpeed = minYSpeed;
+		vSpeed = minVSpeed;
 		inAir = true;
 	}
 	public void gravity()
 	{
-		if (ySpeed >= maxYSpeed)
-	    	ySpeed = maxYSpeed;
+		if (vSpeed >= maxVSpeed)
+	    	vSpeed = maxVSpeed;
 		else
-			ySpeed += gravForce;
+			vSpeed += gravForce;
+		inAir = true;
 	}
 	public void checkXCol(ArrayList<ArrayList<Character>> charMap)
 	{
-		Rectangle newY = new Rectangle(x + hSpeed, y, 40,40);
+		Rectangle newY = new Rectangle(x + hSpeed, y, sideLength,sideLength);
 		Rectangle compare;
 		for (int i = 0; i < charMap.size(); i++)
 		{
@@ -77,7 +79,7 @@ public class Player
 						}
 						else if (hSpeed > 0)
 						{
-							x = (j - 1)*48 + 8;
+							x = (j - 1)*48 + (48 - sideLength);
 						}
 						hSpeed= 0;
 						
@@ -89,8 +91,8 @@ public class Player
 	}
 	public void checkYCol(ArrayList<ArrayList<Character>> charMap)
 	{
-		//int newY = y + ySpeed;
-		Rectangle newY = new Rectangle(x, y + ySpeed, 40,40);
+		//int newY = y + vSpeed;
+		Rectangle newY = new Rectangle(x, y + vSpeed, sideLength,sideLength);
 		Rectangle compare;
 		for (int i = 0; i < charMap.size(); i++)
 		{
@@ -102,16 +104,16 @@ public class Player
 					
 					if (newY.intersects(compare))
 					{
-						if (ySpeed < 0)
+						if (vSpeed < 0)
 						{
 							y = (i + 1)*48 ;
 						}
-						else if (ySpeed > 0)
+						else if (vSpeed > 0)
 						{
-							y = (i - 1)*48 + 8;
+							y = (i - 1)*48 + (48 - sideLength);
 						}
 						inAir = false;
-						ySpeed= 0;
+						vSpeed= 0;
 						
 
 					}
@@ -123,18 +125,17 @@ public class Player
 	}
 	public void tick()
 	{
-
 		x += hSpeed;
-		y += ySpeed;
+		y += vSpeed;
 	}
 	public void draw(Graphics g)
 	{
 
 		g.setColor(Color.RED);
-		g.fillRect(x+hSpeed, y+ySpeed, 40, 40);
+		g.fillRect(x+hSpeed, y+vSpeed, sideLength, sideLength);
 		
 		g.setColor(Color.BLUE);
-		g.fillRect(x, y, 40, 40);
+		g.fillRect(x, y, sideLength, sideLength);
 	}
 	
 	public void setLeft(boolean b)
