@@ -13,17 +13,19 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private TrailBlazer tb;
 	private ArrayList<ArrayList<Character>> charMap;
 	private Player louis;
+	private int mapX, mapY;
 		
 	public GamePlay(int k, TrailBlazer tb)
 	{
 		this.tb = tb;
 		
 		loadMap(1);
-		louis = new Player(100,100);
+		louis = new Player(493,269);
 		
-		//setFocusable(true);
 		addKeyListener(this);
 		
+		mapX = 0;
+		mapY = 0;
 		
 		time = new Timer(17, this);
 		time.start();
@@ -51,11 +53,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 		louis.gravity();
 		
-		louis.checkYCol(charMap);
-		louis.checkXCol(charMap);
+		louis.checkCol(charMap, mapX, mapY);
 		
+		mapX -= louis.moveX();
+		mapY -= louis.moveY();
 		
-		louis.tick();
 		repaint();
 	}
 	public void paintComponent(Graphics g) 
@@ -67,9 +69,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
 				if (charMap.get(i).get(j) != '0')
-					g.fillRect(j * 48, i * 48, 48, 48);
+					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);
 			}
 		}
+		
 		louis.draw(g);
 		
 	}

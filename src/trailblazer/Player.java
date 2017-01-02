@@ -1,6 +1,7 @@
 package trailblazer;
 
 import java.awt.*;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 
 public class Player 
@@ -14,13 +15,17 @@ public class Player
                     isDeadScreen, hasWonScreen, 
                     cheat;
 	
-	public int x, y;
+	private int x, y;
 	private int hSpeed = 0, vSpeed = 0;
+	private Rectangle xPredict, yPredict;
 	  
+	final private Rectangle central = new Rectangle(200, 180, 384, 216);
+	private int xColMod, yColMod;
 	final private int sideLength = 38;
+	
 	final private int acceleration = 2, friction = 1, gravForce = 1;
 	final private int minHSpeed = -6, maxHSpeed = 6;
-	final private int minVSpeed = -20, maxVSpeed = 26;
+	final private int minVSpeed = -20, maxVSpeed = 20;
 	  
 	public Player(int x, int y)
 	{
@@ -53,84 +58,94 @@ public class Player
 	}
 	public void gravity()
 	{
+		vSpeed += gravForce;
 		if (vSpeed >= maxVSpeed)
 	    	vSpeed = maxVSpeed;
-		else
-			vSpeed += gravForce;
 		inAir = true;
 	}
-	public void checkXCol(ArrayList<ArrayList<Character>> charMap)
+	public void checkCol(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY)
 	{
-		Rectangle newY = new Rectangle(x + hSpeed, y, sideLength,sideLength);
+		xPredict = new Rectangle(x + hSpeed, y, sideLength,sideLength);
+		yPredict = new Rectangle(x, y + vSpeed, sideLength, sideLength);
 		Rectangle compare;
-		for (int i = 0; i < charMap.size(); i++)
-		{
-			for (int j = 0; j < charMap.get(i).size(); j++)
-			{
-				if (charMap.get(i).get(j) != '0')
-				{
-					compare = new Rectangle(j*48, i*48, 48, 48);
-					
-					if (newY.intersects(compare))
-					{
-						if (hSpeed < 0)
-						{
-							x = (j + 1)*48 ;
-						}
-						else if (hSpeed > 0)
-						{
-							x = (j - 1)*48 + (48 - sideLength);
-						}
-						hSpeed= 0;
-						
+		xColMod = 0;
+		yColMod = 0;
 
-					}
-				}
-			}
-		}
-	}
-	public void checkYCol(ArrayList<ArrayList<Character>> charMap)
-	{
-		//int newY = y + vSpeed;
-		Rectangle newY = new Rectangle(x, y + vSpeed, sideLength,sideLength);
-		Rectangle compare;
+		check:
 		for (int i = 0; i < charMap.size(); i++)
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
 				if (charMap.get(i).get(j) != '0')
 				{
-					compare = new Rectangle(j*48, i*48, 48, 48);
-					
-					if (newY.intersects(compare))
+					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
+					if (yPredict.intersects(compare))
 					{
+						
 						if (vSpeed < 0)
 						{
-							y = (i + 1)*48 ;
+							yColMod +=(mapY + (i + 1) * 48) - y; 
 						}
 						else if (vSpeed > 0)
 						{
-							y = (i - 1)*48 + (48 - sideLength);
+							yColMod +=(mapY + (i * 48)) - (y + sideLength);
 						}
+						
 						inAir = false;
 						vSpeed= 0;
-						
-
 					}
+					else if (xPredict.intersects(compare))
+					{
+						
+						if (hSpeed < 0)
+						{
+							xColMod += mapX + (j + 1) * 48 - x; 
+						}
+						else if (hSpeed > 0)
+						{
+							xColMod += mapX + j * 48 - x - sideLength;
+						}
+						
+						hSpeed= 0;
+					}
+					
+					
 				}
 			}
 		}
-		
-		
 	}
-	public void tick()
+	
+	
+	public int moveX()
 	{
-		x += hSpeed;
-		y += vSpeed;
+		if (xPredict.intersects(central))
+		{
+			x += hSpeed + xColMod;
+
+			return 0;
+		}
+		else
+		{
+			return hSpeed + xColMod;
+		}
+	}
+	public int moveY()
+	{
+		if (yPredict.intersects(central))
+		{
+			y += vSpeed + yColMod;
+			return 0;
+		}
+		else
+		{
+			return vSpeed + yColMod;
+		}
 	}
 	public void draw(Graphics g)
 	{
-
+		g.drawRect((int)central.getX(), (int)central.getY(),(int) central.getWidth(), (int)central.getHeight());
+		
+		
 		g.setColor(Color.RED);
 		g.fillRect(x+hSpeed, y+vSpeed, sideLength, sideLength);
 		
