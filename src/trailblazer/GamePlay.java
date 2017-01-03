@@ -15,21 +15,19 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private Player louis;
 	private int mapX, mapY;
 		
-	public GamePlay(int k, TrailBlazer tb)
+	final private int spawnX = 384, spawnY = 288;
+
+	public GamePlay(String k, TrailBlazer tb)
 	{
 		this.tb = tb;
 		
-		loadMap(1);
-		louis = new Player(493,269);
+		loadMap(k);
+		louis = new Player(spawnX, spawnY);
 		
 		addKeyListener(this);
-		
-		mapX = 0;
-		mapY = 0;
-		
+				
 		time = new Timer(17, this);
 		time.start();
-		
 		
 	    this.addComponentListener( new ComponentAdapter() {
 	        public void componentShown( ComponentEvent e ) {
@@ -68,7 +66,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j) != '0')
+				if (charMap.get(i).get(j) == '1')
 					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);
 			}
 		}
@@ -111,7 +109,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	public void keyTyped(KeyEvent e){}
 	
 	
-	public void loadMap(int k)
+	public void loadMap(String k)
 	{
 		charMap = new ArrayList<ArrayList<Character>>();
 		try{
@@ -124,15 +122,20 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				ArrayList<Character> e = new ArrayList<Character>();
 				
 				for (int i = 0; i < l.length(); i++)
+				{
 					e.add(l.charAt(i));
+					if (l.charAt(i) == '*')
+					{
+						mapX = spawnX - l.indexOf('*') * 48;
+						mapY = spawnY - charMap.size() * 48;
+					}
+				}
 
 				charMap.add(e);
 			}
 			input.close();
 
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+		}catch(Exception e){e.printStackTrace();}
 		System.out.println(charMap);
 	}
 }

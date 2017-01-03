@@ -19,7 +19,7 @@ public class Player
 	private int hSpeed = 0, vSpeed = 0;
 	private Rectangle xPredict, yPredict;
 	  
-	final private Rectangle central = new Rectangle(200, 180, 384, 216);
+	final private Rectangle central = new Rectangle(296, 180, 96, 216);
 	private int xColMod, yColMod;
 	final private int sideLength = 38;
 	
@@ -76,7 +76,7 @@ public class Player
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j) != '0')
+				if (charMap.get(i).get(j) == '1')
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					if (yPredict.intersects(compare))
@@ -145,8 +145,8 @@ public class Player
 	{
 		g.drawRect((int)central.getX(), (int)central.getY(),(int) central.getWidth(), (int)central.getHeight());
 		
-		
-		g.setColor(Color.RED);
+		//g.drawLine(1024/2, 0, 1024/2, 576);
+		g.setColor(Color.CYAN);
 		g.fillRect(x+hSpeed, y+vSpeed, sideLength, sideLength);
 		
 		g.setColor(Color.BLUE);

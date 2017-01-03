@@ -15,7 +15,6 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	private JButton [] optionButtons;
 	private TrailBlazer tb;
 	
-	
 	public MainMenu(TrailBlazer tb)
 	{
 		this.tb=tb;
@@ -25,11 +24,9 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		optionSprites = new BufferedImage[8];
 		loadSprites();
 		
-		
 		this.setLayout(null);
 		optionButtons = new JButton[4];
 
-		
 		for (int i = 0; i < 4; i++)
 		{
 			optionButtons[i] = new JButton();
@@ -48,7 +45,6 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	        optionButtons[i].setBounds(143, 310 + 45 * i, size.width, size.height);
 		}
 	}
-	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
@@ -61,7 +57,8 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	public void mouseClicked(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
-	public void mouseEntered(MouseEvent e) {
+	public void mouseEntered(MouseEvent e) 
+	{
 		for (int i = 0; i < optionButtons.length; i++)
 		{
 			if (e.getSource() == optionButtons[i])
@@ -69,9 +66,9 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 				optionButtons[i].setIcon(new ImageIcon(optionSprites[i*2+1]));
 			}
 		}
-
 	}
-	public void mouseExited(MouseEvent e) {
+	public void mouseExited(MouseEvent e) 
+	{
 		for (int i = 0; i < optionButtons.length; i++)
 		{
 			if (e.getSource() == optionButtons[i])
@@ -79,37 +76,23 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 				optionButtons[i].setIcon(new ImageIcon(optionSprites[i*2]));
 			}
 		}
-
 	}
-
-	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-
 		if (e.getSource() == optionButtons[0])
 		{
-			tb.newLevel(2);
+			tb.newLevel("level1");
 			tb.changeCard("2");
 		}
 		
-		if (e.getSource() == optionButtons[3])
-		{
+		else if (e.getSource() == optionButtons[3])
 			System.exit(0);
-		}
-	
-		
 	}
-	
-	
 	public void loadSprites()
 	{
 		try{
 			background = ImageIO.read(getClass().getClassLoader().getResource("mmbackground.png"));
 			optionImage = ImageIO.read(getClass().getClassLoader().getResource("options.png"));
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+		}catch(Exception e){e.printStackTrace();}
 		
 		title = optionImage.getSubimage(0, 0, 322, 50);
 		
@@ -118,9 +101,6 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		if (optionImage == null) System.out.print(true);
 		
 		for (int i = 0; i < 8; i++)
-		{
 			optionSprites[i] = optionImage.getSubimage(0, 52 + 36*i, optionWidth[i/2], 36);
-		}
-		
 	}
 }
