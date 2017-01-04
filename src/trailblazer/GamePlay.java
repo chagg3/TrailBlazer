@@ -1,19 +1,24 @@
 package trailblazer;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class GamePlay extends JPanel implements KeyListener, ActionListener
 {
-	private Timer time;
+	private Timer timer;
 	private TrailBlazer tb;
 	private ArrayList<ArrayList<Character>> charMap;
 	private Player louis;
+	private int initMapX, initMapY;
 	private int mapX, mapY;
+	private long deathInitTime = -1L;
 		
 	final private int spawnX = 384, spawnY = 288;
 
@@ -24,10 +29,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		loadMap(k);
 		louis = new Player(spawnX, spawnY);
 		
+		mapX = initMapX;
+		mapY = initMapY;
+		
 		addKeyListener(this);
 				
-		time = new Timer(17, this);
-		time.start();
+		timer = new Timer(17, this);
+		timer.start();
 		
 	    this.addComponentListener( new ComponentAdapter() {
 	        public void componentShown( ComponentEvent e ) {
@@ -38,24 +46,46 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	}
 	public void actionPerformed(ActionEvent e) 
 	{
-		if (louis.right)
+		if (!louis.isDead)
 		{
-			louis.moveR();
+			if (louis.right)
+			{
+				louis.moveR();
+			}
+			if (louis.left)
+			{
+				louis.moveL();
+			}
+			if (!louis.left && !louis.right) //if the player is not actively trying to move, apply friction
+				louis.friction();
+			
+			louis.gravity();
+			
+			louis.checkCol(charMap, mapX, mapY);
+		
+			mapX -= louis.moveX();
+			mapY -= louis.moveY();
+			
+			louis.checkDeath(charMap, mapX, mapY);
 		}
-		if (louis.left)
+		else
 		{
-			louis.moveL();
+			  if (deathInitTime < 0) 
+			  {
+		            deathInitTime = System.currentTimeMillis();
+			  } 
+			  else 
+			  {
+		            long currTime = System.currentTimeMillis();
+		            if (currTime - deathInitTime > 1000) 
+		            {
+		                mapX = initMapX;
+		                mapY = initMapY;
+		                louis = new Player(spawnX, spawnY);
+		                deathInitTime = -1L;
+		            }
+			  }
 		}
-		if (!louis.left && !louis.right) //if the player is not actively trying to move, apply friction
-			louis.friction();
-		
-		louis.gravity();
-		
-		louis.checkCol(charMap, mapX, mapY);
-		
-		mapX -= louis.moveX();
-		mapY -= louis.moveY();
-		
 		repaint();
 	}
 	public void paintComponent(Graphics g) 
@@ -67,18 +97,27 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
 				if (charMap.get(i).get(j) == '1')
+				{
+					g.setColor(Color.DARK_GRAY);
 					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);
+				}
+				if (charMap.get(i).get(j) == '2')
+				{
+					g.setColor(Color.RED);
+					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
+				}
 			}
 		}
 		
 		louis.draw(g);
 		
 	}
+	
 	public void keyPressed(KeyEvent e) 
 	{
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 		{
-			time.stop();
+			timer.stop();
 			tb.removeLevel();
 		}
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
@@ -113,7 +152,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	{
 		charMap = new ArrayList<ArrayList<Character>>();
 		try{
-			File file = new File("C:/Users/borna/Documents/New folder/TrailBlazer/resources/test.txt");//temporary
+			File file = new File("bin/test.txt");//temporary
 			System.out.println(file);
 			Scanner input = new Scanner(file);
 			while (input.hasNext())
@@ -126,11 +165,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 					e.add(l.charAt(i));
 					if (l.charAt(i) == '*')
 					{
-						mapX = spawnX - l.indexOf('*') * 48;
-						mapY = spawnY - charMap.size() * 48;
+						initMapX = spawnX - l.indexOf('*') * 48;
+						initMapY = spawnY - charMap.size() * 48;
 					}
 				}
-
 				charMap.add(e);
 			}
 			input.close();

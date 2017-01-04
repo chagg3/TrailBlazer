@@ -90,8 +90,8 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	public void loadSprites()
 	{
 		try{
-			background = ImageIO.read(getClass().getClassLoader().getResource("mmbackground.png"));
-			optionImage = ImageIO.read(getClass().getClassLoader().getResource("options.png"));
+			background = ImageIO.read(new File("bin/mmbackground.png"));
+			optionImage = ImageIO.read(new File("bin/options.png"));
 		}catch(Exception e){e.printStackTrace();}
 		
 		title = optionImage.getSubimage(0, 0, 322, 50);

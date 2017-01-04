@@ -1,15 +1,21 @@
 package trailblazer;
 
 import java.awt.*;
-import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
+import javax.swing.Timer;
 
 public class Player 
 {
-	public boolean left, right, 
-	                crouch, 
-                    inAir, 
-                    isDead, hasWon, 
+	private Timer timer;
+	private int timerC;
+	
+	public boolean left, right, inAir, isDead;
+	private boolean show,
+					crouch, 
+                    hasWon, 
                     displayRed, 
                     faceRight,
                     isDeadScreen, hasWonScreen, 
@@ -31,6 +37,23 @@ public class Player
 	{
 		this.x = x;
 		this.y = y;
+		isDead = false;
+		
+		show = true;
+		timerC = 0;
+		
+		timer = new Timer(250, new ActionListener(){
+			 public void actionPerformed(ActionEvent e) {
+	             if (timerC<6)
+	            	 show = !show;
+	             else
+	            	 timer.stop();
+	             timerC++;
+
+	            }
+	        });
+		timer.start();
+	
 	}
 	public void moveL() 
 	{
@@ -68,6 +91,7 @@ public class Player
 		xPredict = new Rectangle(x + hSpeed, y, sideLength,sideLength);
 		yPredict = new Rectangle(x, y + vSpeed, sideLength, sideLength);
 		Rectangle compare;
+		
 		xColMod = 0;
 		yColMod = 0;
 
@@ -83,45 +107,52 @@ public class Player
 					{
 						
 						if (vSpeed < 0)
-						{
 							yColMod +=(mapY + (i + 1) * 48) - y; 
-						}
 						else if (vSpeed > 0)
-						{
 							yColMod +=(mapY + (i * 48)) - (y + sideLength);
-						}
 						
 						inAir = false;
 						vSpeed= 0;
 					}
 					else if (xPredict.intersects(compare))
 					{
-						
 						if (hSpeed < 0)
-						{
 							xColMod += mapX + (j + 1) * 48 - x; 
-						}
 						else if (hSpeed > 0)
-						{
 							xColMod += mapX + j * 48 - x - sideLength;
-						}
 						
 						hSpeed= 0;
 					}
-					
-					
 				}
 			}
 		}
 	}
-	
-	
+	public void checkDeath(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY)
+	{
+		Rectangle current = new Rectangle(x, y, sideLength, sideLength);
+		Rectangle compare;
+		
+		for (int i = 0; i < charMap.size(); i++)
+		{
+			for (int j = 0; j < charMap.get(i).size(); j++)
+			{
+				if (charMap.get(i).get(j) == '2')
+				{
+					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
+					
+					if (current.intersects(compare))
+					{
+						isDead = true;
+					}
+				}
+			}
+		}
+	}
 	public int moveX()
 	{
 		if (xPredict.intersects(central))
 		{
 			x += hSpeed + xColMod;
-
 			return 0;
 		}
 		else
@@ -143,13 +174,16 @@ public class Player
 	}
 	public void draw(Graphics g)
 	{
-		g.drawRect((int)central.getX(), (int)central.getY(),(int) central.getWidth(), (int)central.getHeight());
+		//g.drawRect((int)central.getX(), (int)central.getY(),(int) central.getWidth(), (int)central.getHeight());
 		
 		//g.drawLine(1024/2, 0, 1024/2, 576);
-		g.setColor(Color.CYAN);
-		g.fillRect(x+hSpeed, y+vSpeed, sideLength, sideLength);
+		//g.setColor(Color.CYAN);
+		//g.fillRect(x+hSpeed, y+vSpeed, sideLength, sideLength);
 		
 		g.setColor(Color.BLUE);
+		if (isDead)
+			g.setColor(Color.BLACK);
+		if (show)
 		g.fillRect(x, y, sideLength, sideLength);
 	}
 	
