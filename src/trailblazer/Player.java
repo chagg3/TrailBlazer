@@ -42,7 +42,7 @@ public class Player
 		show = true;
 		timerC = 0;
 		
-		timer = new Timer(250, new ActionListener(){
+		timer = new Timer(125, new ActionListener(){
 			 public void actionPerformed(ActionEvent e) {
 	             if (timerC<6)
 	            	 show = !show;
@@ -95,21 +95,19 @@ public class Player
 		xColMod = 0;
 		yColMod = 0;
 
-		check:
 		for (int i = 0; i < charMap.size(); i++)
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j) == '1')
+				if (charMap.get(i).get(j) == '1' || charMap.get(i).get(j) >='3')
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					if (yPredict.intersects(compare))
 					{
-						
 						if (vSpeed < 0)
 							yColMod +=(mapY + (i + 1) * 48) - y; 
 						else if (vSpeed > 0)
-							yColMod +=(mapY + (i * 48)) - (y + sideLength);
+							yColMod +=(mapY + (i * 48)) - y - sideLength;
 						
 						inAir = false;
 						vSpeed= 0;
@@ -127,7 +125,7 @@ public class Player
 			}
 		}
 	}
-	public void checkDeath(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY)
+	public void checkEvents(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY, ArrayList<Projectile> projectiles)
 	{
 		Rectangle current = new Rectangle(x, y, sideLength, sideLength);
 		Rectangle compare;

@@ -15,6 +15,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private Timer timer;
 	private TrailBlazer tb;
 	private ArrayList<ArrayList<Character>> charMap;
+	private ArrayList<Turret> turrets;
+	private Timer turretTimer;
+	private ArrayList<Projectile> projectiles;
+	private ArrayList<CheckPoint> checkpoints;
+	
 	private Player louis;
 	private int initMapX, initMapY;
 	private int mapX, mapY;
@@ -26,6 +31,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	{
 		this.tb = tb;
 		
+		turrets = new ArrayList<Turret>();
+		projectiles = new ArrayList<Projectile>();
+
+		
 		loadMap(k);
 		louis = new Player(spawnX, spawnY);
 		
@@ -36,13 +45,26 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				
 		timer = new Timer(17, this);
 		timer.start();
+
+		
+		turretTimer = new Timer(2000, new ActionListener(){
+			 public void actionPerformed(ActionEvent e) {
+				 	for (int i = 0; i < turrets.size(); i++)
+				 	{
+				 		projectiles.add(turrets.get(i).fire());
+				 	}
+
+	            }
+	        });
+		turretTimer.start();
+		
 		
 	    this.addComponentListener( new ComponentAdapter() {
 	        public void componentShown( ComponentEvent e ) {
 	            GamePlay.this.requestFocusInWindow();
 	        }
 	    });
-	    
+	 
 	}
 	public void actionPerformed(ActionEvent e) 
 	{
@@ -66,14 +88,12 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			mapX -= louis.moveX();
 			mapY -= louis.moveY();
 			
-			louis.checkDeath(charMap, mapX, mapY);
+			louis.checkEvents(charMap, mapX, mapY, projectiles);
 		}
 		else
 		{
 			  if (deathInitTime < 0) 
-			  {
 		            deathInitTime = System.currentTimeMillis();
-			  } 
 			  else 
 			  {
 		            long currTime = System.currentTimeMillis();
@@ -86,11 +106,24 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		            }
 			  }
 		}
+		
+		for (int i = projectiles.size()-1; i >= 0; i--)
+		{
+			projectiles.get(i).travel();
+			if (projectiles.get(i).checkCol(charMap, mapX, mapY))
+				projectiles.remove(i);
+		}
+		
 		repaint();
 	}
 	public void paintComponent(Graphics g) 
 	{
 		super.paintComponent(g);
+		
+		for (int i = 0; i < projectiles.size(); i++)
+		{
+			projectiles.get(i).draw(mapX, mapY, g);
+		}
 		
 		for (int i = 0; i < charMap.size(); i++)
 		{
@@ -101,9 +134,14 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 					g.setColor(Color.DARK_GRAY);
 					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);
 				}
-				if (charMap.get(i).get(j) == '2')
+				else if (charMap.get(i).get(j) == '2')
 				{
 					g.setColor(Color.RED);
+					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
+				}
+				else if (charMap.get(i).get(j) >='3')
+				{
+					g.setColor(Color.ORANGE);
 					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
 				}
 			}
@@ -122,11 +160,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		}
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
 		{
-			louis.setLeft(true);
+			louis.left = true;
 		}
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 		{
-			louis.setRight(true);
+			louis.right = true;
 		}
 		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_W)
 		{
@@ -138,11 +176,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	{
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
 		{
-			louis.setLeft(false);
+			louis.left = false;
 		}
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 		{
-			louis.setRight(false);
+			louis.right = false;
 		}
 	}
 	public void keyTyped(KeyEvent e){}
@@ -163,10 +201,15 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				for (int i = 0; i < l.length(); i++)
 				{
 					e.add(l.charAt(i));
+					
 					if (l.charAt(i) == '*')
 					{
 						initMapX = spawnX - l.indexOf('*') * 48;
 						initMapY = spawnY - charMap.size() * 48;
+					}
+					else if (l.charAt(i) >= '3')
+					{
+						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
 					}
 				}
 				charMap.add(e);
