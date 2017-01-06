@@ -145,6 +145,17 @@ public class Player
 				}
 			}
 		}
+		
+		for (int i = 0; i < projectiles.size(); i++)
+		{
+			compare = projectiles.get(i).getRectangle(mapX, mapY);
+			
+			if (current.intersects(compare))
+			{
+				isDead = true;
+			}
+
+		}
 	}
 	public int moveX()
 	{

@@ -32,12 +32,15 @@ public class Projectile
 	}
 	public void draw(int mapX, int mapY, Graphics g)
 	{
-		g.setColor(Color.BLACK);
-		g.fillRect(mapX + x, mapY + y, 6, 6);
+		g.setColor(Color.MAGENTA);
+		if (direction <= 2)
+			g.fillRect(mapX + x, mapY + y, 17, 7);
+		else
+			g.fillRect(mapX + x, mapY + y, 7, 17);
 	}
 	public boolean checkCol(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY)
 	{
-		Rectangle current = new Rectangle(mapX+x,mapY+ y, 6, 6);
+		Rectangle current = getRectangle(mapX, mapY);
 		Rectangle compare;
 		
 		for (int i = 0; i < charMap.size(); i++)
@@ -56,5 +59,15 @@ public class Projectile
 			}
 		}
 		return false;
+	}
+	public Rectangle getRectangle(int mapX, int mapY)
+	{
+		Rectangle r;
+		if (direction <= 2)
+			r = new Rectangle(mapX + x, mapY + y, 17, 7);
+		else
+			r = new Rectangle(mapX + x, mapY + y, 7, 17);
+		
+		return r;
 	}
 }

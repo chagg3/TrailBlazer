@@ -14,16 +14,15 @@ public class Turret
 	public Projectile fire()
 	{
 		Projectile n;
-		//int blitMod;
 		
 		if (direction == 1)
-			n = new Projectile(j*48, i*48, direction);
+			n = new Projectile(j*48 - 17, i*48 + 21, direction);
 		else if (direction == 2)
-			n = new Projectile((j+1)*48, i*48, direction);
+			n = new Projectile((j+1)*48, i*48 + 21, direction);
 		else if (direction == 3)
-			n = new Projectile(j*48, i*48, direction);
+			n = new Projectile(j*48 + 21, i*48 - 17, direction);
 		else
-			n = new Projectile(j*48, (i+1)*48, direction);
+			n = new Projectile(j*48 + 21, (i+1)*48, direction);
 			
 		
 		return n;

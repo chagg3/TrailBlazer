@@ -3,7 +3,9 @@ package trailblazer;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -19,6 +21,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private Timer turretTimer;
 	private ArrayList<Projectile> projectiles;
 	private ArrayList<CheckPoint> checkpoints;
+	BufferedImage jungle;
 	
 	private Player louis;
 	private int initMapX, initMapY;
@@ -88,6 +91,15 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			mapX -= louis.moveX();
 			mapY -= louis.moveY();
 			
+			for (int i = projectiles.size()-1; i >= 0; i--)
+			{
+				if (projectiles.get(i).checkCol(charMap, mapX, mapY))
+					projectiles.remove(i);
+				else
+					projectiles.get(i).travel();
+			}
+			
+			
 			louis.checkEvents(charMap, mapX, mapY, projectiles);
 		}
 		else
@@ -101,18 +113,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		            {
 		                mapX = initMapX;
 		                mapY = initMapY;
+		                projectiles.clear();
 		                louis = new Player(spawnX, spawnY);
 		                deathInitTime = -1L;
 		            }
 			  }
 		}
 		
-		for (int i = projectiles.size()-1; i >= 0; i--)
-		{
-			projectiles.get(i).travel();
-			if (projectiles.get(i).checkCol(charMap, mapX, mapY))
-				projectiles.remove(i);
-		}
 		
 		repaint();
 	}
@@ -120,11 +127,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	{
 		super.paintComponent(g);
 		
-		for (int i = 0; i < projectiles.size(); i++)
-		{
-			projectiles.get(i).draw(mapX, mapY, g);
-		}
-		
+
 		for (int i = 0; i < charMap.size(); i++)
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
@@ -132,7 +135,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				if (charMap.get(i).get(j) == '1')
 				{
 					g.setColor(Color.DARK_GRAY);
-					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);
+					g.drawImage(jungle, mapX + j * 48, mapY + i * 48, null);//(mapX + j * 48, mapY + i * 48, 48, 48);
 				}
 				else if (charMap.get(i).get(j) == '2')
 				{
@@ -148,6 +151,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		}
 		
 		louis.draw(g);
+		for (int i = 0; i < projectiles.size(); i++)
+		{
+			projectiles.get(i).draw(mapX, mapY, g);
+		}
 		
 	}
 	
@@ -188,6 +195,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	
 	public void loadMap(String k)
 	{
+		try {
+			jungle = ImageIO.read(new File("bin/blocktestgrass.png"));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
 		charMap = new ArrayList<ArrayList<Character>>();
 		try{
 			File file = new File("bin/test.txt");//temporary
