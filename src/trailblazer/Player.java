@@ -114,6 +114,7 @@ public class Player
 					}
 					else if (xPredict.intersects(compare))
 					{
+						
 						if (hSpeed < 0)
 							xColMod += mapX + (j + 1) * 48 - x; 
 						else if (hSpeed > 0)

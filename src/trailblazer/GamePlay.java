@@ -20,7 +20,8 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private ArrayList<Turret> turrets;
 	private Timer turretTimer;
 	private ArrayList<Projectile> projectiles;
-	private ArrayList<CheckPoint> checkpoints;
+	private ArrayList<Enemy> enemies;
+
 	BufferedImage jungle;
 	
 	private Player louis;
@@ -36,6 +37,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 		turrets = new ArrayList<Turret>();
 		projectiles = new ArrayList<Projectile>();
+		enemies = new ArrayList<Enemy>();
 
 		
 		loadMap(k);
@@ -73,16 +75,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	{
 		if (!louis.isDead)
 		{
-			if (louis.right)
-			{
-				louis.moveR();
-			}
-			if (louis.left)
-			{
-				louis.moveL();
-			}
-			if (!louis.left && !louis.right) //if the player is not actively trying to move, apply friction
-				louis.friction();
+			if (louis.right) louis.moveR();
+			if (louis.left) louis.moveL();
+			//if the player is not actively trying to move, apply friction
+			if (!louis.left && !louis.right) louis.friction();
 			
 			louis.gravity();
 			
@@ -98,7 +94,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				else
 					projectiles.get(i).travel();
 			}
-			
+			for (int i = 0; i < enemies.size(); i++)
+			{
+				enemies.get(i).travel(charMap, mapX, mapY);
+			}
 			
 			louis.checkEvents(charMap, mapX, mapY, projectiles);
 		}
@@ -155,7 +154,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		{
 			projectiles.get(i).draw(mapX, mapY, g);
 		}
-		
+		for (int i = 0; i < enemies.size(); i++)
+		{
+			enemies.get(i).draw(mapX, mapY, g);
+		}
 	}
 	
 	public void keyPressed(KeyEvent e) 
@@ -224,6 +226,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 					else if (l.charAt(i) >= '3')
 					{
 						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
+					}
+					else if (l.charAt(i) == '/')
+					{
+						enemies.add(new Enemy(i*48, charMap.size()* 48));
 					}
 				}
 				charMap.add(e);
