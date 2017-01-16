@@ -9,7 +9,7 @@ public class Enemy
 {
 	private int x, y;
 	private int hSpeed, vSpeed;
-	final private int minVSpeed = -20, maxVSpeed = 20;
+	final private int maxVSpeed = 20;
 
 	private int gravForce = 1;
 	
@@ -17,14 +17,16 @@ public class Enemy
 	{
 		this.x = x;
 		this.y = y;
-		System.out.println(x + " " + y);
 
 		hSpeed = 2;
 	}
-	public void draw(int mapX, int mapY, Graphics g)
+	public void draw(int mapX, int mapY, Graphics g, boolean anim)
 	{
-		g.setColor(Color.GREEN);
-		///System.out.println((x)+ " " +  (y));
+		if (anim)
+			g.setColor(Color.GREEN);
+		else
+			g.setColor(Color.orange);
+
 		g.fillRect(mapX+x,mapY+y, 38, 38);
 	}
 
@@ -51,7 +53,7 @@ public class Enemy
 		Rectangle compare;
 		
 		boolean flip = false;
-		boolean botright = false;
+		boolean bot = false;
 
 		
 		for (int i = 0; i < charMap.size(); i++)
@@ -67,18 +69,22 @@ public class Enemy
 					if (xPredict.intersects(compare))
 						flip = true;
 					if (cornerPredict.intersects(compare))
-						botright = true;
+						bot = true;
 						
 				}
 			}
 		}
 		
-		if (flip || !botright)
+		if (flip || !bot)
 			hSpeed *= -1;
 		
 		x += hSpeed;
 		y += vSpeed;
 	
+	}
+	public Rectangle getRectangle(int mapX, int mapY)
+	{
+		return new Rectangle(mapX + x, mapY + y, 38, 38);
 	}
 	
 	

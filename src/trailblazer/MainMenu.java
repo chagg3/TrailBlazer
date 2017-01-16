@@ -10,6 +10,9 @@ import javax.swing.*;
 
 public class MainMenu extends JPanel implements ActionListener, MouseListener
 {
+
+	private static final long serialVersionUID = 1L;
+	
 	private BufferedImage background, title, optionImage;
 	private BufferedImage [] optionSprites;
 	private JButton [] optionButtons;
@@ -18,8 +21,6 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	public MainMenu(TrailBlazer tb)
 	{
 		this.tb=tb;
-		
-		setFocusable(true);
 
 		optionSprites = new BufferedImage[8];
 		loadSprites();
@@ -49,7 +50,6 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		super.paintComponent(g);
 		
 		g.drawImage(background,0,0,1024,576, null);
-		
 		g.drawImage(title, 160, 250, null);
 	}
 	
@@ -80,8 +80,7 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == optionButtons[0])
 		{
-			tb.newLevel("level1");
-			tb.changeCard("2");
+			tb.changeCard("level");
 		}
 		
 		else if (e.getSource() == optionButtons[3])

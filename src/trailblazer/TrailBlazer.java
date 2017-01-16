@@ -7,7 +7,10 @@ import java.awt.event.ActionListener;
 
 public class TrailBlazer extends JFrame  
 {
-    private JPanel cardPanel;
+
+	private static final long serialVersionUID = 1L;
+	
+	private JPanel cardPanel;
     private JPanel mainMenu, levelSelect, gamePlay;
     private CardLayout cardLayout = new CardLayout();
 
@@ -17,14 +20,17 @@ public class TrailBlazer extends JFrame
     	
     	cardPanel = new JPanel();
     	cardPanel.setLayout(cardLayout);
-    	
+        
+    	levelSelect = new LevelSelect(this);
+        cardPanel.add(levelSelect, "level");
+        
+        
     	mainMenu = new MainMenu(this);
         cardPanel.add(mainMenu, "main");
-        
-    	//gamePlay = new GamePlay(1);
-    	//cardPanel.add(gamePlay, "2");
-    	
+
+
         add(cardPanel);
+        changeCard("main");
     }
     
     public void newLevel(String k)

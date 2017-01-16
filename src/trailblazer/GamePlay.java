@@ -14,14 +14,21 @@ import javax.swing.*;
 
 public class GamePlay extends JPanel implements KeyListener, ActionListener
 {
+
+	private static final long serialVersionUID = 1L;
+	
 	private Timer timer;
+	private Timer turretTimer;
+
 	private TrailBlazer tb;
 	private ArrayList<ArrayList<Character>> charMap;
 	private ArrayList<Turret> turrets;
-	private Timer turretTimer;
+	
 	private ArrayList<Projectile> projectiles;
 	private ArrayList<Enemy> enemies;
-
+	private Token token;
+	
+	private boolean cheat;
 	BufferedImage jungle;
 	
 	private Player louis;
@@ -34,6 +41,8 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	public GamePlay(String k, TrailBlazer tb)
 	{
 		this.tb = tb;
+		
+		cheat = false;
 		
 		turrets = new ArrayList<Turret>();
 		projectiles = new ArrayList<Projectile>();
@@ -73,10 +82,29 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	}
 	public void actionPerformed(ActionEvent e) 
 	{
-		if (!louis.isDead)
+		
+		if (louis.isDead && !cheat)
 		{
+			  if (deathInitTime < 0) 
+		            deathInitTime = System.currentTimeMillis();
+			  else 
+			  {
+		            long currTime = System.currentTimeMillis();
+		            if (currTime - deathInitTime > 750) 
+		            {
+		                mapX = initMapX;
+		                mapY = initMapY;
+		                projectiles.clear();
+		                louis = new Player(spawnX, spawnY);
+		                deathInitTime = -1L;
+		            }
+			  }
+		}
+		else //if (!louis.isDead)
+		{
+			louis.isDead = false;
 			if (louis.right) louis.moveR();
-			if (louis.left) louis.moveL();
+			else if (louis.left) louis.moveL();
 			//if the player is not actively trying to move, apply friction
 			if (!louis.left && !louis.right) louis.friction();
 			
@@ -95,28 +123,9 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 					projectiles.get(i).travel();
 			}
 			for (int i = 0; i < enemies.size(); i++)
-			{
 				enemies.get(i).travel(charMap, mapX, mapY);
-			}
 			
-			louis.checkEvents(charMap, mapX, mapY, projectiles);
-		}
-		else
-		{
-			  if (deathInitTime < 0) 
-		            deathInitTime = System.currentTimeMillis();
-			  else 
-			  {
-		            long currTime = System.currentTimeMillis();
-		            if (currTime - deathInitTime > 1000) 
-		            {
-		                mapX = initMapX;
-		                mapY = initMapY;
-		                projectiles.clear();
-		                louis = new Player(spawnX, spawnY);
-		                deathInitTime = -1L;
-		            }
-			  }
+			louis.checkEvents(charMap, mapX, mapY, projectiles, enemies, token);
 		}
 		
 		
@@ -125,12 +134,24 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	public void paintComponent(Graphics g) 
 	{
 		super.paintComponent(g);
+		int vLeft, vRight;
+		int hLeft, hRight;
 		
+		if (mapX/48 <= 0) hLeft = -mapX/48;
+		else hLeft = 0;
+		hRight = hLeft + 23;
+		
+		if (mapY/48 <= 0) vLeft = -mapY/48;
+		else vLeft = 0;
+		vRight = vLeft + 13;
+		
+		if (vRight > charMap.size()) vRight = charMap.size();
 
-		for (int i = 0; i < charMap.size(); i++)
+		for (int i = vLeft; i < vRight; i++)
 		{
-			for (int j = 0; j < charMap.get(i).size(); j++)
-			{
+			if (hRight > charMap.get(i).size()) hRight = charMap.get(i).size();
+			for (int j = hLeft; j < hRight; j++)
+			{ 
 				if (charMap.get(i).get(j) == '1')
 				{
 					g.setColor(Color.DARK_GRAY);
@@ -150,93 +171,97 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		}
 		
 		louis.draw(g);
+		
 		for (int i = 0; i < projectiles.size(); i++)
-		{
 			projectiles.get(i).draw(mapX, mapY, g);
-		}
 		for (int i = 0; i < enemies.size(); i++)
-		{
-			enemies.get(i).draw(mapX, mapY, g);
-		}
+			enemies.get(i).draw(mapX, mapY, g, louis.anim);
+		
+		token.draw(mapX, mapY, g);
+		
+		if (cheat)
+			g.drawString("CHEATING", 0, 10);
 	}
 	
 	public void keyPressed(KeyEvent e) 
 	{
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-		{
-			timer.stop();
-			tb.removeLevel();
-		}
-		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
-		{
+			endLevel();
+		else if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
 			louis.left = true;
-		}
-		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
-		{
+		else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 			louis.right = true;
-		}
-		if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_W)
-		{
+		else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_W)
 			if (!louis.inAir)
 				louis.jump();
-		}
+		
+		if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S)
+			if (louis.hover)
+				endLevel();
 	}
 	public void keyReleased(KeyEvent e) 
 	{
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
-		{
 			louis.left = false;
-		}
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
-		{
 			louis.right = false;
+		if (e.getKeyCode() == KeyEvent.VK_C)
+		{
+			cheat = !cheat;
+
 		}
+		
 	}
 	public void keyTyped(KeyEvent e){}
 	
+	public void endLevel()
+	{
+		timer.stop();
+		turretTimer.stop();
+		louis.stopTimer();
+		tb.removeLevel();
+
+	}
 	
 	public void loadMap(String k)
 	{
 		try {
 			jungle = ImageIO.read(new File("bin/blocktestgrass.png"));
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
 		charMap = new ArrayList<ArrayList<Character>>();
 		try{
 			File file = new File("bin/test.txt");//temporary
-			System.out.println(file);
+
 			Scanner input = new Scanner(file);
 			while (input.hasNext())
 			{
 				String l = input.nextLine();
 				ArrayList<Character> e = new ArrayList<Character>();
-				
+
 				for (int i = 0; i < l.length(); i++)
 				{
 					e.add(l.charAt(i));
-					
+					//System.out.println(l.charAt(i));
+
 					if (l.charAt(i) == '*')
 					{
 						initMapX = spawnX - l.indexOf('*') * 48;
 						initMapY = spawnY - charMap.size() * 48;
 					}
 					else if (l.charAt(i) >= '3')
-					{
 						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
-					}
 					else if (l.charAt(i) == '/')
-					{
 						enemies.add(new Enemy(i*48, charMap.size()* 48));
-					}
+					if (l.charAt(i) == '#')
+						token = new Token(i*48, charMap.size()* 48, 1);
 				}
 				charMap.add(e);
 			}
 			input.close();
 
 		}catch(Exception e){e.printStackTrace();}
-		System.out.println(charMap);
 	}
 }
