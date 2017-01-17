@@ -110,7 +110,7 @@ public class Player
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j)<=56 || (charMap.get(i).get(j)>=73 && charMap.get(i).get(j)<=88))
+				if (charMap.get(i).get(j)<=56 || (charMap.get(i).get(j)>=72 && charMap.get(i).get(j)<=88))
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					if (yPredict.intersects(compare))
@@ -140,8 +140,7 @@ public class Player
 	
 	public void checkEvents(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY, 
 			                ArrayList<Projectile> projectiles, 
-			                ArrayList<Enemy> enemies, 
-			                Token token)
+			                ArrayList<Enemy> enemies)
 	{
 		Rectangle current = new Rectangle(x + buffer, y + buffer, sideLength-buffer, sideLength-buffer);
 		Rectangle compare;
@@ -155,15 +154,18 @@ public class Player
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					
 					if (current.intersects(compare))
-					{
 						isDead = true;
-					}
+				}
+				else if (charMap.get(i).get(j) >= 94 && charMap.get(i).get(j) <= 97)
+				{
+					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
+					if (current.intersects(compare))
+						hover = true;
+					else
+						hover = false;
 				}
 			}
 		}
-		
-		if (current.intersects(token.getRectangle(mapX, mapY)))	hover = true;
-		else hover = false;
 		
 		for (int i = 0; i < projectiles.size(); i++)
 		{

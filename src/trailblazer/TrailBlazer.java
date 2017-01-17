@@ -33,10 +33,14 @@ public class TrailBlazer extends JFrame
         add(cardPanel);
         changeCard("main");
     }
-    
     public void newLevel(String k)
     {
     	gamePlay = new GamePlay(k, this);
+    	cardPanel.add(gamePlay, "2");
+    }
+    public void newLevel(String k, String string)
+    {
+    	gamePlay = new GamePlay(k, this, string);
     	cardPanel.add(gamePlay, "2");
     }
     

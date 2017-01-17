@@ -83,6 +83,34 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		else if (e.getSource() == optionButtons[1])
 			tb.changeCard("create");
 
+		//charles wrote this condition
+		else if (e.getSource()==optionButtons[2]){
+			File folder = new File("resources/customlevels");
+			 File[] listOfFiles = folder.listFiles();
+		     String[] fileNames = new String[listOfFiles.length];
+			  // Iterating array of files for printing name of all files present in the directory.
+			    for (int i = 0; i < listOfFiles.length; i++) {
+			    	String n = listOfFiles[i].getName();
+			        n = n.substring(0, n.length()-4);
+			        fileNames[i]=(n);
+			    }
+		     String level = (String)JOptionPane.showInputDialog(
+		                         tb,
+		                         "Load a custom level?",
+		                         "", JOptionPane.PLAIN_MESSAGE,
+		                         null,
+		                         fileNames,
+		                         "");
+		     
+		     if ((level != null) && (level.length() > 0)) {
+		    	 System.out.println("load");
+		    	 level+=".txt";
+		    	 System.out.println(level);
+		     }
+		     tb.newLevel(level, "");
+		     tb.changeCard("2");
+		}
+		
 		else if (e.getSource() == optionButtons[3])
 			System.exit(0);
 	}

@@ -78,7 +78,9 @@ public class Projectile
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 
 					if (current.intersects(compare))
+					{
 						return true;
+					}
 				}
 			}
 		}

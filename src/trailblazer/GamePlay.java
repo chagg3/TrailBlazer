@@ -28,9 +28,9 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	
 	private ArrayList<Projectile> projectiles;
 	private ArrayList<Enemy> enemies;
-	private Token token;
 	
 	private boolean cheat;
+	private String custom;
 	BufferedImage textures;
 	
 	private Player louis;
@@ -82,6 +82,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	    });
 	 
 	}
+	public GamePlay(String k, TrailBlazer tb, String custom)
+	{
+		this(k,tb);
+		this.custom = custom;
+	}
 	public void actionPerformed(ActionEvent e) 
 	{
 		
@@ -127,7 +132,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			for (int i = 0; i < enemies.size(); i++)
 				enemies.get(i).travel(charMap, mapX, mapY);
 			
-			louis.checkEvents(charMap, mapX, mapY, projectiles, enemies, token);
+			louis.checkEvents(charMap, mapX, mapY, projectiles, enemies);
 		}
 		
 		
@@ -154,7 +159,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			if (hRight > charMap.get(i).size()) hRight = charMap.get(i).size();
 			for (int j = hLeft; j < hRight; j++)
 			{ 
-				if (charMap.get(i).get(j) <= 88)
+				if (charMap.get(i).get(j) <= 88 || (charMap.get(i).get(j) >= 94 && charMap.get(i).get(j) <= 97) )
 				{
 					g.drawImage(textures, mapX + j * 48, mapY + i*48, mapX + (j+1) * 48, mapY + (i+1) * 48, 
 						    ((charMap.get(i).get(j)-1)%12)*48, ((charMap.get(i).get(j)-1)/12)*48, 
@@ -170,7 +175,6 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		for (int i = 0; i < enemies.size(); i++)
 			enemies.get(i).draw(mapX, mapY, g, louis.anim);
 		
-		token.draw(mapX, mapY, g);
 		
 		if (cheat)
 			g.drawString("CHEATING", 0, 10);
@@ -205,9 +209,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	
 	public void endLevel()
 	{
+		
 		timer.stop();
 		turretTimer.stop();
 		louis.stopTimer();
+		if (custom != null) tb.changeCard("main");
 		tb.removeLevel();
 
 	}
@@ -236,24 +242,17 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				for (int i = 0; i < l.length(); i++)
 				{
 					e.add(l.charAt(i));
-					//System.out.println(l.charAt(i));
 
-					
-						
-						
 					if (l.charAt(i) >= 89 && l.charAt(i) <= 92)
 						enemies.add(new Enemy(i*48, charMap.size()* 48));
 					if (l.charAt(i) >= 72 && l.charAt(i)<=88)
 						turrets.add(new Turret(charMap.size(), i, (l.charAt(i)-73)%4 +1));
-					if (l.charAt(i) == 93)//69
+					if (l.charAt(i) == 93)
 					{
 						initMapX = spawnX - l.indexOf((char)93) * 48;
 						initMapY = spawnY - charMap.size() * 48;
 					}
-					if (l.charAt(i) == 94) //70
-					{
-						token = new Token(i*48, charMap.size()* 48, 1);
-					}
+
 
 				}
 				charMap.add(e);
