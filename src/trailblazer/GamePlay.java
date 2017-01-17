@@ -31,7 +31,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private Token token;
 	
 	private boolean cheat;
-	BufferedImage jungle;
+	BufferedImage textures;
 	
 	private Player louis;
 	private int initMapX, initMapY;
@@ -154,25 +154,11 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			if (hRight > charMap.get(i).size()) hRight = charMap.get(i).size();
 			for (int j = hLeft; j < hRight; j++)
 			{ 
-				if (charMap.get(i).get(j) == 53)
-						{
-					
-						}
-				else  if (charMap.get(i).get(j) <= 57) 
+				if (charMap.get(i).get(j) <= 88)
 				{
-					g.setColor(Color.DARK_GRAY);
-					
-					g.drawImage(jungle, mapX + j * 48, mapY + i * 48, null);//(mapX + j * 48, mapY + i * 48, 48, 48);
-				}
-				else if (charMap.get(i).get(j) <= 73)
-				{
-					g.setColor(Color.RED);
-					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
-				}
-				else if (charMap.get(i).get(j) <= 89)
-				{
-					g.setColor(Color.ORANGE);
-					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
+					g.drawImage(textures, mapX + j * 48, mapY + i*48, mapX + (j+1) * 48, mapY + (i+1) * 48, 
+						    ((charMap.get(i).get(j)-1)%12)*48, ((charMap.get(i).get(j)-1)/12)*48, 
+						    ((charMap.get(i).get(j)-1)%12+1)*48, ((charMap.get(i).get(j)-1)/12+1)*48, null);
 				}
 			}
 		}
@@ -229,7 +215,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	public void loadMap(String k)
 	{
 		try {
-			jungle = ImageIO.read(new File("bin/blocktestgrass.png"));
+			textures = ImageIO.read(new File("bin/BlockTextures.png"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -251,13 +237,14 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				{
 					e.add(l.charAt(i));
 					//System.out.println(l.charAt(i));
-/*
+
 					
-					else if (l.charAt(i) >= '3')
-						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
-					else if (l.charAt(i) == '/')//71
+						
+						
+					if (l.charAt(i) >= 89 && l.charAt(i) <= 92)
 						enemies.add(new Enemy(i*48, charMap.size()* 48));
-						*/
+					if (l.charAt(i) >= 72 && l.charAt(i)<=88)
+						turrets.add(new Turret(charMap.size(), i, (l.charAt(i)-73)%4 +1));
 					if (l.charAt(i) == 93)//69
 					{
 						initMapX = spawnX - l.indexOf((char)93) * 48;
@@ -277,15 +264,3 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 	}
 }
-/*
- 	if (l.charAt(i) == '*')//69
-					{
-						initMapX = spawnX - l.indexOf('*') * 48;
-						initMapY = spawnY - charMap.size() * 48;
-					}
-					else if (l.charAt(i) >= '3')
-						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
-					else if (l.charAt(i) == '/')//71
-						enemies.add(new Enemy(i*48, charMap.size()* 48));
-					if (l.charAt(i) == '#') //70
-						token = new Token(i*48, charMap.size()* 48, 1);*/

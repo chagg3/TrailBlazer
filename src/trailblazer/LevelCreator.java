@@ -58,7 +58,7 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		super();
 		this.tb = tb;
 		
-		blockID = 1;
+		blockID = 0;
 		
 		area = new Dimension(661,481);
 		
@@ -200,125 +200,152 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		}
 		
 		
-		
-		if(e.getSource().equals(save)){
+		if(e.getSource().equals(save)||e.getSource().equals(load)){
 			
-			String fileName = nameField.getText()+".txt";
-			File newFile = new File("resources/customlevels/"+fileName);
-			System.out.println(newFile.getAbsolutePath());
+			int ybuffer = 4;
+			int xbuffer = 10;
 			
-			try{
-				newFile.createNewFile();
-				FileWriter fw = new FileWriter(newFile);
-				BufferedWriter bw = new BufferedWriter(fw);
+			if(e.getSource().equals(save)){
 				
-				int rows = mapPanel.map.getRows();
-				int columns =  mapPanel.map.getColumns();
+				String fileName = nameField.getText()+".txt";
+				File newFile = new File("resources/customlevels/"+fileName);
+				System.out.println(newFile.getAbsolutePath());
 				
-				for(int i = 0; i < 4; i++){
-					for (int j = 0; j < columns+16; j++)
-						bw.write(Character.toString((char)1));
+				try{
+					newFile.createNewFile();
+					FileWriter fw = new FileWriter(newFile);
+					BufferedWriter bw = new BufferedWriter(fw);
+					
+					int rows = mapPanel.map.getRows();
+					int columns =  mapPanel.map.getColumns();
+					
+					
+				//write spikes
+					for (int j = 0; j < columns+2*xbuffer+2; j++)
+						bw.write(Character.toString((char)60));
 					bw.newLine();
+				
+				//air buffer	
+					for(int i = 0; i < ybuffer; i++){
+						bw.write(Character.toString((char)60));
+						for (int j = 0; j < columns+2*xbuffer; j++)
+							bw.write(Character.toString((char)100));
+						bw.write(Character.toString((char)60));
+						bw.newLine();
+					}
+		
+					for(int i = 0; i < rows; i++){
+					//wall then spike then air
+						bw.write(Character.toString((char)60));
+						
+						for(int k = 0; k < xbuffer; k++){
+							bw.write(Character.toString((char)100));
+						}
+						
+						for(int j = 0; j < columns; j++){
+							char c = (char)(mapPanel.map.getGrid().get(i).get(j).getID()+1);
+							bw.write(Character.toString(c));
+						}
+						
+						for(int k = 0; k < xbuffer; k++){
+							bw.write(Character.toString((char)(100)));
+						}
+			
+						bw.write(Character.toString((char)60));
+						
+						bw.newLine();
+					}
+					
+				//air buffer	
+					for(int i = 0; i < ybuffer; i++){
+						bw.write(Character.toString((char)60));
+						for (int j = 0; j < columns+xbuffer*2; j++)
+							bw.write(Character.toString((char)100));
+						bw.write(Character.toString((char)60));
+						bw.newLine();
+					}
+					
+				//write spikes
+					for (int j = 0; j < columns+xbuffer*2+2; j++)
+						bw.write(Character.toString((char)60));
+					bw.newLine();
+					
+					bw.close();
 				}
+				catch(Exception er){
+					System.out.println(er);
+				}
+				
+				boolean exists = false;
+				 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
+				   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
+				     exists = true;
+				   }
+				 }
+				 if (!exists) {
+				   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
+				 }
+			/*	
+				 boolean exists = false;
+				 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
+				   if (fileName.equals(levelLoad.getItemAt(index))) {
+				     exists = true;
+				   }
+				 }
+				 if (!exists) {
+				   levelLoad.addItem(fileName);
+				 }
+				 */
+			}
+			
+			if(e.getSource().equals(load)){
+				
+				String level = levelLoad.getSelectedItem().toString()+".txt";
+				
+				ArrayList<ArrayList<Character>> charMap = new ArrayList<ArrayList<Character>>();
+		        try
+		        {
+		        	System.out.println("hello");
+		            File file = new File("resources/customlevels/"+level);//temporary
+		            System.out.println(file);
+		            Scanner input = new Scanner(file);
+		            while (input.hasNext())
+		            {
+		                String l = input.nextLine();
+		                ArrayList<Character> r = new ArrayList<Character>();
 	
-				for(int i = 0; i < rows; i++){
-					
-					for(int k = 0; k < 8; k++){
-						bw.write(Character.toString((char)1));
-					}
-					
-					for(int j = 0; j < columns; j++){
-						char c = (char)(mapPanel.map.getGrid().get(i).get(j).getID()+1);
-						bw.write(Character.toString(c));
-					}
-					
-					for(int k = 0; k < 8; k++){
-						bw.write(Character.toString((char)(1)));
-					}
-					
-					bw.newLine();
-				}
-				
-				for(int i = 0; i < 4; i++){
-					for (int j = 0; j < columns+16; j++)
-						bw.write(Character.toString((char)1));
-					bw.newLine();
-				}
-				
-				bw.close();
+		                for (int i = 0; i < l.length(); i++)
+		                {
+		                    r.add(l.charAt(i));
+		                }
+	
+		                charMap.add(r);
+		            }
+		            input.close();	
+		            
+		            System.out.println("greetings");
+		           
+		       //removes top and bottom spikes and buffer
+		            for(int i = 0; i < ybuffer+1; i++){
+		            	charMap.remove(0);
+		            	charMap.remove(charMap.size()-1);
+		            }
+		            for (int j = 0; j<charMap.size(); j++){
+		            	for(int k = 0; k<xbuffer+1; k++){
+		            		charMap.get(j).remove(0);
+		            		charMap.get(j).remove(charMap.get(j).size()-1);
+		            	}
+		           	}
+		            
+		            mapPanel.map = new Map(charMap);
+		            System.out.println("goodbye");
+		            repaint();
+		        }
+		        catch(Exception er){
+		        	er.getStackTrace();
+		        }
 			}
-			catch(Exception er){
-				System.out.println(er);
-			}
-			
-			boolean exists = false;
-			 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-			   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
-			     exists = true;
-			   }
-			 }
-			 if (!exists) {
-			   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
-			 }
-		/*	
-			 boolean exists = false;
-			 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-			   if (fileName.equals(levelLoad.getItemAt(index))) {
-			     exists = true;
-			   }
-			 }
-			 if (!exists) {
-			   levelLoad.addItem(fileName);
-			 }
-			 */
-		}
-		
-		if(e.getSource().equals(load)){
-			
-			String level = levelLoad.getSelectedItem().toString()+".txt";
-			
-			ArrayList<ArrayList<Character>> charMap = new ArrayList<ArrayList<Character>>();
-	        try
-	        {
-	        	System.out.println("hello");
-	            File file = new File("resources/customlevels/"+level);//temporary
-	            System.out.println(file);
-	            Scanner input = new Scanner(file);
-	            while (input.hasNext())
-	            {
-	                String l = input.nextLine();
-	                ArrayList<Character> r = new ArrayList<Character>();
-
-	                for (int i = 0; i < l.length(); i++)
-	                {
-	                    r.add(l.charAt(i));
-	                }
-
-	                charMap.add(r);
-	            }
-	            input.close();	
-	            
-	            System.out.println("greetings");
-
-	            for(int i = 0; i < 4; i++){
-	            	charMap.remove(0);
-	            	charMap.remove(charMap.size()-1);
-	            }
-	            for (int j = 0; j<charMap.size(); j++){
-	            	for(int k = 0; k<8; k++){
-	            		charMap.get(j).remove(0);
-	            		charMap.get(j).remove(charMap.get(j).size()-1);
-	            	}
-	           	}
-	            mapPanel.map = new Map(charMap);
-	            System.out.println("goodbye");
-	            repaint();
-	        }
-	        catch(Exception er){
-	        	er.getStackTrace();
-	        }
-		}
-			
+		}	
 		/*
 			//Serializing the map object
 			try{

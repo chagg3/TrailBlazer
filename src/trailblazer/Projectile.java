@@ -73,14 +73,12 @@ public class Projectile
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j) == '1' || charMap.get(i).get(j) >='3')
+				if (charMap.get(i).get(j)<= 88)
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 
 					if (current.intersects(compare))
-					{
 						return true;
-					}
 				}
 			}
 		}

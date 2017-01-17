@@ -44,7 +44,7 @@ public class Player
 		faceRight = true;
 		isDead = false;
 		
-		hover = true;
+		hover = false;
 		show = true;
 		animTimerC = 0;
 		anim = true;
@@ -110,7 +110,7 @@ public class Player
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j)<=57 && charMap.get(i).get(j) !=53)
+				if (charMap.get(i).get(j)<=56 || (charMap.get(i).get(j)>=73 && charMap.get(i).get(j)<=88))
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					if (yPredict.intersects(compare))
@@ -150,7 +150,7 @@ public class Player
 		{
 			for (int j = 0; j < charMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j) == '2')
+				if (charMap.get(i).get(j) <= 72 && charMap.get(i).get(j) >= 57)
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					
