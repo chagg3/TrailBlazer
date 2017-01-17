@@ -5,7 +5,9 @@ import java.awt.Graphics;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -57,7 +59,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 		addKeyListener(this);
 				
-		timer = new Timer(17, this);
+		timer = new Timer(11, this);
 		timer.start();
 
 		
@@ -152,17 +154,22 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			if (hRight > charMap.get(i).size()) hRight = charMap.get(i).size();
 			for (int j = hLeft; j < hRight; j++)
 			{ 
-				if (charMap.get(i).get(j) == '1')
+				if (charMap.get(i).get(j) == 53)
+						{
+					
+						}
+				else  if (charMap.get(i).get(j) <= 57) 
 				{
 					g.setColor(Color.DARK_GRAY);
+					
 					g.drawImage(jungle, mapX + j * 48, mapY + i * 48, null);//(mapX + j * 48, mapY + i * 48, 48, 48);
 				}
-				else if (charMap.get(i).get(j) == '2')
+				else if (charMap.get(i).get(j) <= 73)
 				{
 					g.setColor(Color.RED);
 					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
 				}
-				else if (charMap.get(i).get(j) >='3')
+				else if (charMap.get(i).get(j) <= 89)
 				{
 					g.setColor(Color.ORANGE);
 					g.fillRect(mapX + j * 48, mapY + i * 48, 48, 48);					
@@ -192,7 +199,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 			louis.right = true;
 		else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_W)
-			if (!louis.inAir)
+			if (!louis.inAir || cheat)
 				louis.jump();
 		
 		if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S)
@@ -206,11 +213,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
 			louis.right = false;
 		if (e.getKeyCode() == KeyEvent.VK_C)
-		{
 			cheat = !cheat;
-
-		}
-		
 	}
 	public void keyTyped(KeyEvent e){}
 	
@@ -230,10 +233,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		
+	
 
 		charMap = new ArrayList<ArrayList<Character>>();
+		
 		try{
-			File file = new File("bin/test.txt");//temporary
+			File file = new File("resources/customlevels/" + k);//temporary
 
 			Scanner input = new Scanner(file);
 			while (input.hasNext())
@@ -245,23 +251,41 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 				{
 					e.add(l.charAt(i));
 					//System.out.println(l.charAt(i));
-
-					if (l.charAt(i) == '*')
-					{
-						initMapX = spawnX - l.indexOf('*') * 48;
-						initMapY = spawnY - charMap.size() * 48;
-					}
+/*
+					
 					else if (l.charAt(i) >= '3')
 						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
-					else if (l.charAt(i) == '/')
+					else if (l.charAt(i) == '/')//71
 						enemies.add(new Enemy(i*48, charMap.size()* 48));
-					if (l.charAt(i) == '#')
+						*/
+					if (l.charAt(i) == 93)//69
+					{
+						initMapX = spawnX - l.indexOf((char)93) * 48;
+						initMapY = spawnY - charMap.size() * 48;
+					}
+					if (l.charAt(i) == 94) //70
+					{
 						token = new Token(i*48, charMap.size()* 48, 1);
+					}
+
 				}
 				charMap.add(e);
 			}
 			input.close();
 
 		}catch(Exception e){e.printStackTrace();}
+		
 	}
 }
+/*
+ 	if (l.charAt(i) == '*')//69
+					{
+						initMapX = spawnX - l.indexOf('*') * 48;
+						initMapY = spawnY - charMap.size() * 48;
+					}
+					else if (l.charAt(i) >= '3')
+						turrets.add(new Turret(charMap.size(), i, l.charAt(i)-'2'));
+					else if (l.charAt(i) == '/')//71
+						enemies.add(new Enemy(i*48, charMap.size()* 48));
+					if (l.charAt(i) == '#') //70
+						token = new Token(i*48, charMap.size()* 48, 1);*/

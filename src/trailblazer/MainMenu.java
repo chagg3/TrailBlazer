@@ -79,10 +79,10 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	}
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == optionButtons[0])
-		{
 			tb.changeCard("level");
-		}
-		
+		else if (e.getSource() == optionButtons[1])
+			tb.changeCard("create");
+
 		else if (e.getSource() == optionButtons[3])
 			System.exit(0);
 	}

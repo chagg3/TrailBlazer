@@ -92,7 +92,7 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 		}
 		if (e.getSource() == tokenButtons[2])
 		{
-			tb.newLevel("level1");
+			tb.newLevel("testgg.txt");
 			tb.changeCard("2");
 		}
 	}

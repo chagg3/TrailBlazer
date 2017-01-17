@@ -11,7 +11,7 @@ public class TrailBlazer extends JFrame
 	private static final long serialVersionUID = 1L;
 	
 	private JPanel cardPanel;
-    private JPanel mainMenu, levelSelect, gamePlay;
+    private JPanel mainMenu, levelSelect, levelCreator, gamePlay;
     private CardLayout cardLayout = new CardLayout();
 
     public TrailBlazer()
@@ -24,10 +24,11 @@ public class TrailBlazer extends JFrame
     	levelSelect = new LevelSelect(this);
         cardPanel.add(levelSelect, "level");
         
-        
     	mainMenu = new MainMenu(this);
         cardPanel.add(mainMenu, "main");
 
+        levelCreator = new LevelCreator(this);
+        cardPanel.add(levelCreator, "create");
 
         add(cardPanel);
         changeCard("main");
