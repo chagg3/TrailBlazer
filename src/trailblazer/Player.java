@@ -49,9 +49,9 @@ public class Player
 		animTimerC = 0;
 		anim = true;
 
-		animTimer = new Timer(100, new ActionListener(){
+		animTimer = new Timer(125, new ActionListener(){
 			 public void actionPerformed(ActionEvent e) {
-	             if (animTimerC<6)
+	             if (animTimerC<4)
 	             {
 	            	 show = !show;
 		             animTimerC++;
@@ -97,7 +97,7 @@ public class Player
 	    	vSpeed = maxVSpeed;
 		inAir = true;
 	}
-	public void checkCol(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY)
+	public void checkCol(ArrayList<ArrayList<Integer>> intMap, int mapX, int mapY)
 	{
 		xPredict = new Rectangle(x + hSpeed, y, sideLength,sideLength);
 		yPredict = new Rectangle(x, y + vSpeed, sideLength, sideLength);
@@ -106,11 +106,9 @@ public class Player
 		xColMod = 0;
 		yColMod = 0;
 
-		for (int i = 0; i < charMap.size(); i++)
-		{
-			for (int j = 0; j < charMap.get(i).size(); j++)
-			{
-				if (charMap.get(i).get(j)<=56 || (charMap.get(i).get(j)>=72 && charMap.get(i).get(j)<=88))
+		for (int i = 0; i < intMap.size(); i++)
+			for (int j = 0; j < intMap.get(i).size(); j++)
+				if (intMap.get(i).get(j)<=55 || (intMap.get(i).get(j)>=72 && intMap.get(i).get(j)<=87))
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					if (yPredict.intersects(compare))
@@ -134,35 +132,32 @@ public class Player
 						hSpeed= 0;
 					}
 				}
-			}
-		}
 	}
 	
-	public void checkEvents(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY, 
+	public void checkEvents(ArrayList<ArrayList<Integer>> intMap, int mapX, int mapY, 
 			                ArrayList<Projectile> projectiles, 
 			                ArrayList<Enemy> enemies)
 	{
 		Rectangle current = new Rectangle(x + buffer, y + buffer, sideLength-buffer, sideLength-buffer);
 		Rectangle compare;
-		
-		for (int i = 0; i < charMap.size(); i++)
+		hover = false;
+		for (int i = 0; i < intMap.size(); i++)
 		{
-			for (int j = 0; j < charMap.get(i).size(); j++)
+			for (int j = 0; j < intMap.get(i).size(); j++)
 			{
-				if (charMap.get(i).get(j) <= 72 && charMap.get(i).get(j) >= 57)
+				if (intMap.get(i).get(j) <= 71 && intMap.get(i).get(j) >= 56)
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					
 					if (current.intersects(compare))
 						isDead = true;
 				}
-				else if (charMap.get(i).get(j) >= 94 && charMap.get(i).get(j) <= 97)
+				else if (intMap.get(i).get(j) >= 93 && intMap.get(i).get(j) <= 97)
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
 					if (current.intersects(compare))
 						hover = true;
-					else
-						hover = false;
+
 				}
 			}
 		}

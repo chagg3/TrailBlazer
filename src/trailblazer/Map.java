@@ -8,6 +8,7 @@ package trailblazer;
 import java.awt.Graphics;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class Map implements Serializable{
@@ -42,7 +43,8 @@ public class Map implements Serializable{
 		for(int i=0; i<rows; i++){
 			ArrayList<Block> blocks = new ArrayList<Block>();
 			for(int j = 0; j<columns; j++){
-				blocks.add(new Block((int)charArr.get(i).get(j)-1));
+			//offset of ascii values to block values is 11	
+				blocks.add(new Block((int)charArr.get(i).get(j)-11));
 			}
 			grid.add(blocks);
 		}
@@ -97,6 +99,73 @@ public class Map implements Serializable{
 	public void changeBlock(int x, int y, Block b){
 		grid.get(y).set(x, b);
 	}
+	
+//add buffers here	
+	public ArrayList<ArrayList<Integer>> getIntGrid(){
+		
+		int ybuffer = 10;
+		int xbuffer = 14;
+		final int airID = 100;
+		final int spikeID = 56;
+		final int invisID = 55;
+		
+		ArrayList<ArrayList<Integer>> intMap = new ArrayList<ArrayList<Integer>>();
+	
+		ArrayList<Integer> buffer = new ArrayList<Integer>();
+		ArrayList<Integer> spikeLayer = new ArrayList<Integer>();
+		ArrayList<Integer> invisLayer = new ArrayList<Integer>();
+
+		buffer.add(invisID);
+		buffer.add(spikeID);
+		for(int i = 0; i < columns+xbuffer*2; i++){
+			buffer.add(airID);
+		}
+		buffer.add(spikeID);
+		buffer.add(invisID);
+		
+		spikeLayer.add(invisID);
+		for(int i = 0; i<columns+xbuffer*2+2; i++){
+			spikeLayer.add(spikeID);
+			invisLayer.add(invisID);
+		}
+		spikeLayer.add(invisID);
+		
+		invisLayer.add(invisID);
+		invisLayer.add(invisID);
+		
+		intMap.add(invisLayer);
+		intMap.add(spikeLayer);
+		for(int i = 0; i < ybuffer; i++){
+			intMap.add(buffer);
+		}	
+		
+		for(int i = 0; i < rows; i++){
+			intMap.add(new ArrayList<Integer>());
+			intMap.get(intMap.size()-1).add(invisID);
+			System.out.println(intMap.size()-1);
+			intMap.get(intMap.size()-1).add(spikeID);
+			for(int p = 0; p< xbuffer; p++)
+				intMap.get(intMap.size()-1).add(airID);
+			
+			for(int j =0; j<columns; j++)
+				intMap.get(intMap.size()-1).add(grid.get(i).get(j).getID());
+			
+			for(int p = 0; p< xbuffer; p++)
+				intMap.get(intMap.size()-1).add(airID);
+
+			intMap.get(intMap.size()-1).add(spikeID);
+			intMap.get(intMap.size()-1).add(invisID);
+		}
+
+	//bottom buffer layer	
+		for(int i = 0; i < ybuffer; i++){
+			intMap.add(buffer);
+		}
+		intMap.add(spikeLayer);
+		intMap.add(invisLayer);
+
+		return intMap;
+}
 	
 	public void draw(Graphics g){
 		

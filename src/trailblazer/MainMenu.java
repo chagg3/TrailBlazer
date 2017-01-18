@@ -106,9 +106,10 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		    	 System.out.println("load");
 		    	 level+=".txt";
 		    	 System.out.println(level);
+			     tb.newLevel(level, "");
+			     tb.changeCard("2");
 		     }
-		     tb.newLevel(level, "");
-		     tb.changeCard("2");
+
 		}
 		
 		else if (e.getSource() == optionButtons[3])

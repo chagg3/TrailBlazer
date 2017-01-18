@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
  * Type of block
  */
 
-public class Block{
+public class Block implements Serializable{
 
 	private int id;
 	private static BufferedImage img = null;

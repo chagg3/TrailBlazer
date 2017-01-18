@@ -23,7 +23,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	private Timer turretTimer;
 
 	private TrailBlazer tb;
-	private ArrayList<ArrayList<Character>> charMap;
+	private ArrayList<ArrayList<Integer>> intMap;
 	private ArrayList<Turret> turrets;
 	
 	private ArrayList<Projectile> projectiles;
@@ -104,6 +104,9 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		                projectiles.clear();
 		                louis = new Player(spawnX, spawnY);
 		                deathInitTime = -1L;
+			            for (int i = 0; i < enemies.size(); i++)
+			            	enemies.get(i).respawn();
+
 		            }
 			  }
 		}
@@ -117,22 +120,22 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			
 			louis.gravity();
 			
-			louis.checkCol(charMap, mapX, mapY);
+			louis.checkCol(intMap, mapX, mapY);
 		
 			mapX -= louis.moveX();
 			mapY -= louis.moveY();
 			
 			for (int i = projectiles.size()-1; i >= 0; i--)
 			{
-				if (projectiles.get(i).checkCol(charMap, mapX, mapY))
+				if (projectiles.get(i).checkCol(intMap, mapX, mapY))
 					projectiles.remove(i);
 				else
 					projectiles.get(i).travel();
 			}
 			for (int i = 0; i < enemies.size(); i++)
-				enemies.get(i).travel(charMap, mapX, mapY);
+				enemies.get(i).travel(intMap, mapX, mapY);
 			
-			louis.checkEvents(charMap, mapX, mapY, projectiles, enemies);
+			louis.checkEvents(intMap, mapX, mapY, projectiles, enemies);
 		}
 		
 		
@@ -143,6 +146,10 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		super.paintComponent(g);
 		int vLeft, vRight;
 		int hLeft, hRight;
+		vLeft = 0;
+		hLeft = 0;
+		vRight =intMap.size();
+		//hRight 
 		
 		if (mapX/48 <= 0) hLeft = -mapX/48;
 		else hLeft = 0;
@@ -152,18 +159,18 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		else vLeft = 0;
 		vRight = vLeft + 13;
 		
-		if (vRight > charMap.size()) vRight = charMap.size();
+		if (vRight > intMap.size()) vRight = intMap.size();
 
 		for (int i = vLeft; i < vRight; i++)
 		{
-			if (hRight > charMap.get(i).size()) hRight = charMap.get(i).size();
+			if (hRight > intMap.get(i).size()) hRight = intMap.get(i).size();
 			for (int j = hLeft; j < hRight; j++)
 			{ 
-				if (charMap.get(i).get(j) <= 88 || (charMap.get(i).get(j) >= 94 && charMap.get(i).get(j) <= 97) )
+				if (intMap.get(i).get(j) <= 87 || (intMap.get(i).get(j) >= 93 && intMap.get(i).get(j) <= 97) || intMap.get(i).get(j) >= 101 )
 				{
 					g.drawImage(textures, mapX + j * 48, mapY + i*48, mapX + (j+1) * 48, mapY + (i+1) * 48, 
-						    ((charMap.get(i).get(j)-1)%12)*48, ((charMap.get(i).get(j)-1)/12)*48, 
-						    ((charMap.get(i).get(j)-1)%12+1)*48, ((charMap.get(i).get(j)-1)/12+1)*48, null);
+						    ((intMap.get(i).get(j))%12)*48, ((intMap.get(i).get(j))/12)*48, 
+						    ((intMap.get(i).get(j))%12+1)*48, ((intMap.get(i).get(j))/12+1)*48, null);
 				}
 			}
 		}
@@ -172,9 +179,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 		for (int i = 0; i < projectiles.size(); i++)
 			projectiles.get(i).draw(mapX, mapY, g);
-		for (int i = 0; i < enemies.size(); i++)
-			enemies.get(i).draw(mapX, mapY, g, louis.anim);
 		
+		if (louis.isDead && !cheat)
+			for (int i = 0; i < enemies.size(); i++)
+				enemies.get(i).draw(mapX, mapY, g);
+		else
+			for (int i = 0; i < enemies.size(); i++)
+				enemies.get(i).draw(mapX, mapY, g, louis.anim);		
 		
 		if (cheat)
 			g.drawString("CHEATING", 0, 10);
@@ -220,46 +231,46 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	
 	public void loadMap(String k)
 	{
+		BufferedImage [] enemyImages = new BufferedImage[4] ;
 		try {
 			textures = ImageIO.read(new File("bin/BlockTextures.png"));
+			enemyImages[0] = ImageIO.read(new File("bin/robbie.png"));
+			enemyImages[1] = ImageIO.read(new File("bin/labenemy.png"));
+			enemyImages[2] = ImageIO.read(new File("bin/louisenemy.png"));
+			enemyImages[3] = ImageIO.read(new File("bin/cityenemy.png"));
+
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 		
-	
-
-		charMap = new ArrayList<ArrayList<Character>>();
+		intMap = new ArrayList<ArrayList<Integer>>();
 		
-		try{
-			File file = new File("resources/customlevels/" + k);//temporary
-
-			Scanner input = new Scanner(file);
-			while (input.hasNext())
-			{
-				String l = input.nextLine();
-				ArrayList<Character> e = new ArrayList<Character>();
-
-				for (int i = 0; i < l.length(); i++)
-				{
-					e.add(l.charAt(i));
-
-					if (l.charAt(i) >= 89 && l.charAt(i) <= 92)
-						enemies.add(new Enemy(i*48, charMap.size()* 48));
-					if (l.charAt(i) >= 72 && l.charAt(i)<=88)
-						turrets.add(new Turret(charMap.size(), i, (l.charAt(i)-73)%4 +1));
-					if (l.charAt(i) == 93)
-					{
-						initMapX = spawnX - l.indexOf((char)93) * 48;
-						initMapY = spawnY - charMap.size() * 48;
-					}
-
-
-				}
-				charMap.add(e);
-			}
-			input.close();
-
-		}catch(Exception e){e.printStackTrace();}
-		
+        try{
+            ObjectInputStream is = new ObjectInputStream(new FileInputStream("resources/customlevels/"+k));
+            Map m = (Map)is.readObject();
+            intMap = m.getIntGrid();
+            is.close();
+        }
+        catch(Exception er){
+            er.printStackTrace();
+        }
+        
+        for (int i = 0; i < intMap.size(); i++)
+        	System.out.println(intMap.get(i));
+        		
+        for (int i = 0; i < intMap.size(); i++)
+        	for (int j = 0; j < intMap.get(i).size(); j++)
+        	{
+        		if (intMap.get(i).get(j) >= 72 && intMap.get(i).get(j) <=87)
+        			turrets.add(new Turret(i, j, (intMap.get(i).get(j)-72)%4+1));
+        		else if (intMap.get(i).get(j) >= 88 && intMap.get(i).get(j) <= 91)
+        			enemies.add(new Enemy(j*48, i* 48, enemyImages[intMap.get(i).get(j)-88]));
+        		else if (intMap.get(i).get(j) == 92)
+        		{
+        			initMapX = spawnX - (j) * 48;
+        			initMapY = spawnY - (i) * 48;
+        		}
+        	}
 	}
 }
+

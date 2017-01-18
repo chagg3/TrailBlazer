@@ -64,26 +64,20 @@ public class Projectile
 		else
 			g.drawImage(vTexture, mapX + x, mapY + y - 7 , null);
 	}
-	public boolean checkCol(ArrayList<ArrayList<Character>> charMap, int mapX, int mapY)
+	public boolean checkCol(ArrayList<ArrayList<Integer>> intMap, int mapX, int mapY)
 	{
 		Rectangle current = getRectangle(mapX, mapY);
 		Rectangle compare;
 		
-		for (int i = 0; i < charMap.size(); i++)
-		{
-			for (int j = 0; j < charMap.get(i).size(); j++)
-			{
-				if (charMap.get(i).get(j)<= 88)
+		for (int i = 0; i < intMap.size(); i++)
+			for (int j = 0; j < intMap.get(i).size(); j++)
+				if (intMap.get(i).get(j)<= 87)
 				{
 					compare = new Rectangle(mapX + j*48, mapY + i*48, 48, 48);
-
 					if (current.intersects(compare))
-					{
 						return true;
-					}
 				}
-			}
-		}
+
 		return false;
 	}
 	public Rectangle getRectangle(int mapX, int mapY)

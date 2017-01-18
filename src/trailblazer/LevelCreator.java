@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -31,8 +32,11 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -52,6 +56,7 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 	private Dimension area;
 	private CardLayout cl;
 	private int blockID;
+	private ImageIcon icon;
 	private TrailBlazer tb;
 	
 	public LevelCreator(TrailBlazer tb){
@@ -68,16 +73,16 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		mapPanel.addMouseListener(this);
 		mapPanel.addMouseMotionListener(this);
 		increaseDown = new JButton("v");
-		increaseDown.setPreferredSize(new Dimension(696,31));
+		increaseDown.setPreferredSize(new Dimension(696,45));
 		increaseDown.addActionListener(this);
 		decreaseUp = new JButton("^");
-		decreaseUp.setPreferredSize(new Dimension(696,31));
+		decreaseUp.setPreferredSize(new Dimension(696,46));
 		decreaseUp.addActionListener(this);
 		increaseRight = new JButton(">");
-		increaseRight.setPreferredSize(new Dimension(42, 480));
+		increaseRight.setPreferredSize(new Dimension(45, 480));
 		increaseRight.addActionListener(this);
 		decreaseLeft = new JButton("<");
-		decreaseLeft.setPreferredSize(new Dimension(42, 480));
+		decreaseLeft.setPreferredSize(new Dimension(45, 480));
 		decreaseLeft.addActionListener(this);
 		mapScroller = new JScrollPane(mapPanel);
 		System.out.println(imagePanel.getWidth() +" "+ imagePanel.getHeight());
@@ -111,7 +116,7 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		nameField = new JTextField("DefaultFileName");
 		
 		saveLoadPanel = new JPanel();
-		saveLoadPanel.setPreferredSize(new Dimension(269,50));
+		saveLoadPanel.setPreferredSize(new Dimension(269,79));
 		saveLoadPanel.setLayout(new GridLayout(2,1));
 		JPanel nameLoad = new JPanel(new GridLayout(1,2));
 		saveLoadPanel.add(nameLoad);
@@ -206,102 +211,159 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 			int xbuffer = 10;
 			
 			if(e.getSource().equals(save)){
+			
+				int start = 0;
+				int finish = 0;
 				
-				String fileName = nameField.getText()+".txt";
-				File newFile = new File("resources/customlevels/"+fileName);
-				System.out.println(newFile.getAbsolutePath());
-				
-				try{
-					newFile.createNewFile();
-					FileWriter fw = new FileWriter(newFile);
-					BufferedWriter bw = new BufferedWriter(fw);
-					
-					int rows = mapPanel.map.getRows();
-					int columns =  mapPanel.map.getColumns();
-					
-					
-				//write spikes
-					for (int j = 0; j < columns+2*xbuffer+2; j++)
-						bw.write(Character.toString((char)60));
-					bw.newLine();
-				
-				//air buffer	
-					for(int i = 0; i < ybuffer; i++){
-						bw.write(Character.toString((char)60));
-						for (int j = 0; j < columns+2*xbuffer; j++)
-							bw.write(Character.toString((char)100));
-						bw.write(Character.toString((char)60));
-						bw.newLine();
+				for(int i = 0; i < mapPanel.map.getRows(); i++){
+					for(int j = 0; j < mapPanel.map.getColumns();j++){
+						int id = mapPanel.map.getGrid().get(i).get(j).getID();
+						if (id == 92)
+							start++;
+						if(93 <= id && id <= 97)
+							finish++;
 					}
-		
-					for(int i = 0; i < rows; i++){
-					//wall then spike then air
-						bw.write(Character.toString((char)60));
+				}
+				
+
+				
+				if(start > 1){
+					icon = new ImageIcon("bin/louisIcon.png");
+					JOptionPane.showMessageDialog(tb,
+						    "You cannot have more than one player on your level.",
+						    "Cannot Save.",
+						    JOptionPane.ERROR_MESSAGE, icon);
+				}
+				else if (start == 0){
+					icon = new ImageIcon("bin/louisIcon.png");
+					JOptionPane.showMessageDialog(tb,
+						    "You must have one player on your level.",
+						    "Cannot Save.",
+						    JOptionPane.ERROR_MESSAGE, icon);
+				}
+				else if(finish == 0){
+					icon = new ImageIcon("bin/finishIcon.png");
+					JOptionPane.showMessageDialog(tb,
+						    "You must have one finish point on your level.",
+						    "Cannot Save.",
+						    JOptionPane.ERROR_MESSAGE,icon);
+				}
+				else{
+					String fileName = nameField.getText()+".txt";
+					File newFile = new File("resources/customlevels/"+fileName);
+					System.out.println(newFile.getAbsolutePath());
+					
+					//Serializing the map object
+					try{
+						ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(newFile));
+						os.writeObject(mapPanel.map);
+						os.close();
+					}
+					catch(Exception er){
+						er.printStackTrace();
+					}
+					
+					 boolean exists = false;
+					 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
+					   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
+					     exists = true;
+					   }
+					 }
+					 if (!exists) {
+					   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
+					 }
+				/*	
+					try{
+						newFile.createNewFile();
+						FileWriter fw = new FileWriter(newFile);
+						BufferedWriter bw = new BufferedWriter(fw);
 						
-						for(int k = 0; k < xbuffer; k++){
-							bw.write(Character.toString((char)100));
-						}
+						int rows = mapPanel.map.getRows();
+						int columns =  mapPanel.map.getColumns();
 						
-						for(int j = 0; j < columns; j++){
-							char c = (char)(mapPanel.map.getGrid().get(i).get(j).getID()+1);
-							bw.write(Character.toString(c));
-						}
 						
-						for(int k = 0; k < xbuffer; k++){
-							bw.write(Character.toString((char)(100)));
+					//write spikes
+						for (int j = 0; j < columns+2*xbuffer+2; j++)
+							bw.write(Character.toString((char)60));
+						bw.newLine();
+					
+					//air buffer	
+						for(int i = 0; i < ybuffer; i++){
+							bw.write(Character.toString((char)60));
+							for (int j = 0; j < columns+2*xbuffer; j++)
+								bw.write(Character.toString((char)100));
+							bw.write(Character.toString((char)60));
+							bw.newLine();
 						}
 			
-						bw.write(Character.toString((char)60));
-						
-						bw.newLine();
-					}
-					
-				//air buffer	
-					for(int i = 0; i < ybuffer; i++){
-						bw.write(Character.toString((char)60));
-						for (int j = 0; j < columns+xbuffer*2; j++)
-							bw.write(Character.toString((char)100));
-						bw.write(Character.toString((char)60));
-						bw.newLine();
-					}
-					
-				//write spikes
-					for (int j = 0; j < columns+xbuffer*2+2; j++)
-						bw.write(Character.toString((char)60));
-					bw.newLine();
-					
-					bw.close();
-				}
-				catch(Exception er){
-					System.out.println(er);
-				}
+						for(int i = 0; i < rows; i++){
+						//wall then spike then air
+							bw.write(Character.toString((char)(60+32)));
+							
+							for(int k = 0; k < xbuffer; k++){
+								bw.write(Character.toString((char)(100+32)));
+							}
+							
+							for(int j = 0; j < columns; j++){
+								char c = (char)(mapPanel.map.getGrid().get(i).get(j).getID()+32);
+								bw.write(Character.toString(c));
+							}
+							
+							for(int k = 0; k < xbuffer; k++){
+								bw.write(Character.toString((char)((100+32))));
+							}
 				
-				boolean exists = false;
-				 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-				   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
-				     exists = true;
-				   }
-				 }
-				 if (!exists) {
-				   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
-				 }
-			/*	
-				 boolean exists = false;
-				 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-				   if (fileName.equals(levelLoad.getItemAt(index))) {
-				     exists = true;
-				   }
-				 }
-				 if (!exists) {
-				   levelLoad.addItem(fileName);
-				 }
-				 */
+							bw.write(Character.toString((char)(60+32)));
+							
+							bw.newLine();
+						}
+						
+					//air buffer	
+						for(int i = 0; i < ybuffer; i++){
+							bw.write(Character.toString((char)(60+32)));
+							for (int j = 0; j < columns+xbuffer*2; j++)
+								bw.write(Character.toString((char)(100+32)));
+							bw.write(Character.toString((char)(60+32)));
+							bw.newLine();
+						}
+						
+					//write spikes
+						for (int j = 0; j < columns+xbuffer*2+2; j++)
+							bw.write(Character.toString((char)(60+32)));
+						bw.newLine();
+						
+						bw.close();
+					}
+					catch(Exception er){
+						System.out.println(er);
+					}
+					
+					boolean exists = false;
+					 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
+					   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
+					     exists = true;
+					   }
+					 }
+					 if (!exists) {
+					   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
+					 }/*
+				/*	
+					 boolean exists = false;
+					 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
+					   if (fileName.equals(levelLoad.getItemAt(index))) {
+					     exists = true;
+					   }
+					 }
+					 if (!exists) {
+					   levelLoad.addItem(fileName);
+					 }
+					 */
+				}
 			}
-			
 			if(e.getSource().equals(load)){
 				
 				String level = levelLoad.getSelectedItem().toString()+".txt";
-				
+				/*
 				ArrayList<ArrayList<Character>> charMap = new ArrayList<ArrayList<Character>>();
 		        try
 		        {
@@ -345,27 +407,7 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		        	er.getStackTrace();
 		        }
 			}
-		}	
-		/*
-			//Serializing the map object
-			try{
-				ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(newFile));
-				os.writeObject(mapPanel.map);
-				os.close();
-			}
-			catch(Exception er){
-				er.printStackTrace();
-			}
-			
-			 boolean exists = false;
-			 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-			   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
-			     exists = true;
-			   }
-			 }
-			 if (!exists) {
-			   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
-			 }
+		}	*/
 		}
 		
 		if(e.getSource().equals(load)){
@@ -383,8 +425,9 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 	        	er.printStackTrace();
 	        }
 	        repaint();
+			}
 		}
-		*/
+		
 	}
 	
 	@Override
