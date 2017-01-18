@@ -1,3 +1,11 @@
+/* Class by Borna Houmani-Farahani
+ * Level select with buttons leading to 5 premade levels
+ *    
+ * ICS4U
+ * Ms. Strelkovska
+ * 
+ * 1/17/17
+ */
 package trailblazer;
 
 import java.awt.Dimension;
@@ -16,14 +24,13 @@ import javax.swing.JPanel;
 
 public class LevelSelect extends JPanel implements ActionListener, MouseListener
 {
-	private static final long serialVersionUID = 1L;
-	
 	private BufferedImage background, back, backRed, tokenImages;
 	private BufferedImage [] tokenSprites;
+	
 	private JButton [] tokenButtons;
 	private JButton backButton;
+	
 	private TrailBlazer tb;
-	private int save;
 	
 	public LevelSelect(TrailBlazer tb)
 	{
@@ -33,6 +40,8 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 		loadSprites();
 		
 		this.setLayout(null);
+		
+		//creates 5 level buttons with images at specific locations
 		tokenButtons = new JButton[5];
 		
 		tokenButtons[0] = createButton(new ImageIcon(tokenSprites[0]), 380, 90);
@@ -41,11 +50,10 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 		tokenButtons[3] = createButton(new ImageIcon(tokenSprites[6]), 320, 310);
 		tokenButtons[4] = createButton(new ImageIcon(tokenSprites[8]), 615, 80);
 
-		
+		//creates back button
 		backButton = createButton(new ImageIcon(back), -10, 530);
+		//adds buttons to panel
 		this.add(backButton);
-
-		
 		for (int i = 0; i < tokenButtons.length; i++)
 			this.add(tokenButtons[i]);
 
@@ -55,16 +63,12 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 		super.paintComponent(g);
 		
 		g.drawImage(background,0,0,1024,576, null);
-		//g.drawImage(title, 160, 250, null);
-		//g.drawImage(tokenImages.getSubimage(0, 0, 250, 250), 0,0, null);
-		for (int i = 4; i < tokenSprites.length; i++)
-			g.drawImage(tokenSprites[i], i*250, 0, null);
-
 	}
 	
 	public void mouseClicked(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
+	//mouseEntered and Exited change the button icons when the mouse hovers over a button
 	public void mouseEntered(MouseEvent e) 
 	{
 		if (e.getSource() == backButton)
@@ -72,7 +76,9 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 		else
 			for (int i = 0; i < tokenButtons.length; i++)
 				if (e.getSource() == tokenButtons[i])
+				{
 					tokenButtons[i].setIcon(new ImageIcon(tokenSprites[i*2+1]));
+				}
 	}
 	public void mouseExited(MouseEvent e) 
 	{
@@ -86,16 +92,36 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 	}
 	public void actionPerformed(ActionEvent e) 
 	{
-		if (e.getSource() == backButton)
-		{
+		if (e.getSource() == backButton)//main menu
 			tb.changeCard("main");
+		//start level when the appropriate button is pressed
+		if (e.getSource() == tokenButtons[0])
+		{
+			tb.newLevel("LevelTwo.txt");
+			tb.changeCard("2");
+		}
+		if (e.getSource() == tokenButtons[1])
+		{
+			tb.newLevel("LevelFour.txt");
+			tb.changeCard("2");
 		}
 		if (e.getSource() == tokenButtons[2])
 		{
 			tb.newLevel("LevelOne.txt");
 			tb.changeCard("2");
 		}
+		if (e.getSource() == tokenButtons[3])
+		{
+			tb.newLevel("LevelThree.txt");
+			tb.changeCard("2");
+		}
+		if (e.getSource() == tokenButtons[4])
+		{
+			tb.newLevel("LevelFive.txt");
+			tb.changeCard("2");
+		}
 	}
+	//creates a in invisible button with an image in it at a specific position
 	public JButton createButton(ImageIcon iI, int x, int y)
 	{
 		JButton b = new JButton();
@@ -113,6 +139,7 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 
 		return b;
 	}
+	//load sprites from sprite sheet
 	public void loadSprites()
 	{
 		try{
@@ -125,6 +152,7 @@ public class LevelSelect extends JPanel implements ActionListener, MouseListener
 			backRed = options.getSubimage(0, 376, 100, 36);
 		}catch(Exception e){e.printStackTrace();}
 		
+		//add images to list in order to be places on buttons later
 		int [][] bounds = {{250,220},{250,120},{70,250},{250,190},{250,250}};
 		for (int i = 0; i < 5; i++)
 		{

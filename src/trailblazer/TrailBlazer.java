@@ -1,3 +1,12 @@
+/* Class by Borna Houmani-Farahani
+ * Creates frame and cardlayout onto which panels are placed and switched between
+ *   
+ * ICS4U
+ * Ms. Strelkovska
+ * 
+ * 1/17/17
+ */
+
 package trailblazer;
 
 import javax.swing.*;
@@ -7,8 +16,6 @@ import java.awt.event.ActionListener;
 
 public class TrailBlazer extends JFrame  
 {
-
-	private static final long serialVersionUID = 1L;
 	
 	private JPanel cardPanel;
     private JPanel mainMenu, levelSelect, levelCreator, gamePlay;
@@ -21,6 +28,8 @@ public class TrailBlazer extends JFrame
     	cardPanel = new JPanel();
     	cardPanel.setLayout(cardLayout);
         
+    	//adding different menus to cardpanel
+    	//passes TrailBlazer class in so that each card can switch between panels on its own
     	levelSelect = new LevelSelect(this);
         cardPanel.add(levelSelect, "level");
         
@@ -31,26 +40,22 @@ public class TrailBlazer extends JFrame
         cardPanel.add(levelCreator, "create");
 
         add(cardPanel);
-        changeCard("main");
+        changeCard("main");//start game with main menu
+    }
+
+    public void newLevel(String k, boolean custom)//method adds new level to cardpanel and switches to it
+    {
+    	gamePlay = new GamePlay(k, this, custom);
+    	cardPanel.add(gamePlay, "2");
     }
     public void newLevel(String k)
     {
-    	gamePlay = new GamePlay(k, this);
-    	cardPanel.add(gamePlay, "2");
+    	newLevel(k, false);
     }
-    public void newLevel(String k, String string)
-    {
-    	gamePlay = new GamePlay(k, this, string);
-    	cardPanel.add(gamePlay, "2");
-    }
-    
-    
     public  void removeLevel()
     {
     	cardLayout.removeLayoutComponent(gamePlay);
     }
-    
-    
 	public  void changeCard(String k)
 	{
 		cardLayout.show(cardPanel, k);

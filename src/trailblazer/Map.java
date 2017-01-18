@@ -2,13 +2,15 @@ package trailblazer;
 /*
  * Charles
  * ICS SUMMATIVE TRAIL BLAZER
- * Dynamic map of level
+ * Serializable, Dynamic map of level
  */
 
 import java.awt.Graphics;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 
 public class Map implements Serializable{
@@ -16,25 +18,26 @@ public class Map implements Serializable{
 	private ArrayList<ArrayList<Block>> grid;
 	private int rows, columns, size;
 	
+//default map constructor with default default values
 	public Map(){
 		rows=16;
 		columns=22;
 		size = 30;
+		
+	//arrayl ist of array lists of blocks is of size rows and columns is created and 
+	//represents the map
 		grid = new ArrayList<ArrayList<Block>>();
-		
-	//creates arraylist with blocks	
-		
 		for(int i =0; i <rows; i++){
 			ArrayList<Block> blocks = new ArrayList<Block>();
 			for(int j = 0; j < columns; j++)
 				blocks.add(new Block());
 			grid.add(blocks);
 		}
-		System.out.println(grid);
 	}
 
+//unimplemented method for reading character array maps	from previous char arry level files
+//unable to remove as it will mess up current serializable files
 	public Map(ArrayList<ArrayList<Character>> charArr){
-		System.out.println(charArr);
 		columns = charArr.get(0).size();
 		rows = charArr.size();
 		size = 30;
@@ -48,18 +51,15 @@ public class Map implements Serializable{
 			}
 			grid.add(blocks);
 		}
-		System.out.println("1");
 	}
 	
 //add one new array list of blocks to 2d grid in order to add row
 	public void addRow(){
-		
 		ArrayList<Block> blocks = new ArrayList<Block>();
 		for(int i = 0; i < columns; i++)
 			blocks.add(new Block());
 		grid.add(blocks);
 		rows++;
-		System.out.println(grid);
 	}
 	
 //add a new block for in array list in grid
@@ -68,39 +68,41 @@ public class Map implements Serializable{
 			grid.get(i).add(new Block());
 		}
 		columns++;
-		System.out.println(grid);
 	}
 	
-//remove the last row
+//remove the last row of the grid, displays error when rows is at a minimum 
 	public void removeRow(){
-		if(rows==16)
-			System.out.println("Minimum vertical map size has been reached.");
+		if(rows<=16)
+			JOptionPane.showMessageDialog(new JFrame(), "Minimum Row Size Reached", "Error",
+					JOptionPane.ERROR_MESSAGE, null);
 		else{
 			grid.remove(rows-1);
 			rows--;
 		}
 	}
 	
-//removes last element in each block array list(by removing only one element form one arraylist???)	
+//removes last element in each block array list, displays error when columns is at a minimum	
 	public void removeColumn(){
-		if(columns==22)
-			System.out.println("Minimum horizontal map size has been reached.");
+		if(columns<=22)
+			JOptionPane.showMessageDialog(new JFrame(), "Minimum Column Size Reached", "Error",
+					JOptionPane.ERROR_MESSAGE, null);
 		else{
 			for(int i = 0; i < rows; i++){
-			//apparently when one element is added to the end of one arraylist, an element is added to all other arraylists in the arraylist
 				grid.get(i).remove(grid.get(i).size()-1);
 			}
 		columns--;
 		}
-		System.out.println(grid);
 	}
 
-//replaces block	
+//replaces block at give row and column	
 	public void changeBlock(int x, int y, Block b){
 		grid.get(y).set(x, b);
 	}
 	
-//add buffers here	
+//method that creates and arraylist of arraylists of integers as the game will need
+//block buffers that prevent you from falling forever by stopping and killing you with spikes
+//if you ever somehow leave the confines of the map. the buffer also prevents you form seeing 
+//these spikes
 	public ArrayList<ArrayList<Integer>> getIntGrid(){
 		
 		int ybuffer = 10;
@@ -115,6 +117,7 @@ public class Map implements Serializable{
 		ArrayList<Integer> spikeLayer = new ArrayList<Integer>();
 		ArrayList<Integer> invisLayer = new ArrayList<Integer>();
 
+	//adds block, then spike then air to buffer layer
 		buffer.add(invisID);
 		buffer.add(spikeID);
 		for(int i = 0; i < columns+xbuffer*2; i++){
@@ -122,23 +125,26 @@ public class Map implements Serializable{
 		}
 		buffer.add(spikeID);
 		buffer.add(invisID);
-		
+	
+	//spike layer and invisible block layer	
 		spikeLayer.add(invisID);
 		for(int i = 0; i<columns+xbuffer*2+2; i++){
 			spikeLayer.add(spikeID);
 			invisLayer.add(invisID);
 		}
 		spikeLayer.add(invisID);
-		
 		invisLayer.add(invisID);
 		invisLayer.add(invisID);
 		
+//code for surrounding the map with a buffer
+	//layer	at the top of map
 		intMap.add(invisLayer);
 		intMap.add(spikeLayer);
 		for(int i = 0; i < ybuffer; i++){
 			intMap.add(buffer);
 		}	
 		
+	//buffer to the side of the map	
 		for(int i = 0; i < rows; i++){
 			intMap.add(new ArrayList<Integer>());
 			intMap.get(intMap.size()-1).add(invisID);
@@ -157,7 +163,7 @@ public class Map implements Serializable{
 			intMap.get(intMap.size()-1).add(invisID);
 		}
 
-	//bottom buffer layer	
+	//buffer layer for the bottom of map	
 		for(int i = 0; i < ybuffer; i++){
 			intMap.add(buffer);
 		}
@@ -166,7 +172,8 @@ public class Map implements Serializable{
 
 		return intMap;
 }
-	
+
+//draws each block from grid	
 	public void draw(Graphics g){
 		
 		for(int i = 0; i  < rows; i++){
@@ -182,7 +189,8 @@ public class Map implements Serializable{
 			}
 		}
 	}
-	
+
+//getter setter methods	
 	public int getRows(){
 		return rows;
 	}

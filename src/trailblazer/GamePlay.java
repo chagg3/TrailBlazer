@@ -1,3 +1,12 @@
+/* Class by Borna Houmani-Farahani
+ * Gameplay class is created and removed whenever a game begins and finishes
+ * Handles all in-game related events
+ *   
+ * ICS4U
+ * Ms. Strelkovska
+ * 
+ * 1/17/17
+ */
 package trailblazer;
 
 import java.awt.Color;
@@ -16,21 +25,20 @@ import javax.swing.*;
 
 public class GamePlay extends JPanel implements KeyListener, ActionListener
 {
-
-	private static final long serialVersionUID = 1L;
 	
-	private Timer timer;
-	private Timer turretTimer;
+	private Timer timer;//fps timer
+	private Timer turretTimer;//determines when turrets fire darts
 
 	private TrailBlazer tb;
-	private ArrayList<ArrayList<Integer>> intMap;
-	private ArrayList<Turret> turrets;
 	
+	private ArrayList<ArrayList<Integer>> intMap;//2d int arraylist representing map
+	private ArrayList<Turret> turrets;
 	private ArrayList<Projectile> projectiles;
 	private ArrayList<Enemy> enemies;
 	
 	private boolean cheat;
-	private String custom;
+	private boolean custom;
+	
 	BufferedImage textures;
 	
 	private Player louis;
@@ -40,18 +48,18 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 	final private int spawnX = 384, spawnY = 288;
 
-	public GamePlay(String k, TrailBlazer tb)
+	public GamePlay(String k, TrailBlazer tb, boolean custom)
 	{
 		this.tb = tb;
+		this.custom = custom;
 		
 		cheat = false;
 		
 		turrets = new ArrayList<Turret>();
 		projectiles = new ArrayList<Projectile>();
 		enemies = new ArrayList<Enemy>();
-
 		
-		loadMap(k);
+		load(k);
 		louis = new Player(spawnX, spawnY);
 		
 		mapX = initMapX;
@@ -59,13 +67,13 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 		
 		addKeyListener(this);
 				
-		timer = new Timer(11, this);
+		timer = new Timer(15, this);//new frame every 15 milliseconds
 		timer.start();
-
 		
+		//turrets fire every 2 seconds
 		turretTimer = new Timer(2000, new ActionListener(){
 			 public void actionPerformed(ActionEvent e) {
-				 	for (int i = 0; i < turrets.size(); i++)
+				 	for (int i = 0; i < turrets.size(); i++) //spawn a projectile for each turret
 				 	{
 				 		projectiles.add(turrets.get(i).fire());
 				 	}
@@ -74,7 +82,7 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	        });
 		turretTimer.start();
 		
-		
+		//get focus
 	    this.addComponentListener( new ComponentAdapter() {
 	        public void componentShown( ComponentEvent e ) {
 	            GamePlay.this.requestFocusInWindow();
@@ -82,42 +90,40 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	    });
 	 
 	}
-	public GamePlay(String k, TrailBlazer tb, String custom)
-	{
-		this(k,tb);
-		this.custom = custom;
-	}
+
 	public void actionPerformed(ActionEvent e) 
 	{
 		
-		if (louis.isDead && !cheat)
+		if (louis.getIsDead() && !cheat)
 		{
-			  if (deathInitTime < 0) 
-		            deathInitTime = System.currentTimeMillis();
-			  else 
-			  {
-		            long currTime = System.currentTimeMillis();
-		            if (currTime - deathInitTime > 750) 
-		            {
-		                mapX = initMapX;
-		                mapY = initMapY;
-		                projectiles.clear();
-		                louis = new Player(spawnX, spawnY);
-		                deathInitTime = -1L;
-			            for (int i = 0; i < enemies.size(); i++)
-			            	enemies.get(i).respawn();
+			//pause game for 750 milliseconds
+			//then respawn and reset player, enemies, projectiles
+			if (deathInitTime < 0) 
+				deathInitTime = System.currentTimeMillis();
+			else 
+			{
+				long currTime = System.currentTimeMillis();
+				if (currTime - deathInitTime > 750) 
+				{
+					mapX = initMapX;
+					mapY = initMapY;
+					projectiles.clear();
+					louis = new Player(spawnX, spawnY);
+					deathInitTime = -1L;
+					for (int i = 0; i < enemies.size(); i++)
+						enemies.get(i).respawn();
 
-		            }
-			  }
+				}	
+			}
 		}
-		else //if (!louis.isDead)
+		else //player is alive, run various game functions
 		{
-			louis.isDead = false;
-			if (louis.right) louis.moveR();
-			else if (louis.left) louis.moveL();
-			//if the player is not actively trying to move, apply friction
-			if (!louis.left && !louis.right) louis.friction();
+			louis.setIsDead(false);
 			
+			//movement
+			if (louis.getRight()) louis.moveR();
+			else if (louis.getLeft()) louis.moveL();
+			if (!louis.getLeft() && !louis.getRight()) louis.friction();
 			louis.gravity();
 			
 			louis.checkCol(intMap, mapX, mapY);
@@ -127,92 +133,107 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			
 			for (int i = projectiles.size()-1; i >= 0; i--)
 			{
-				if (projectiles.get(i).checkCol(intMap, mapX, mapY))
+				if (projectiles.get(i).checkCol(intMap, mapX, mapY)) //if projectiles hit a wall, remove
 					projectiles.remove(i);
-				else
+				else 
 					projectiles.get(i).travel();
 			}
 			for (int i = 0; i < enemies.size(); i++)
 				enemies.get(i).travel(intMap, mapX, mapY);
 			
-			louis.checkEvents(intMap, mapX, mapY, projectiles, enemies);
+			louis.checkEvents(intMap, mapX, mapY, projectiles, enemies);//check for death and win event
 		}
-		
-		
 		repaint();
 	}
 	public void paintComponent(Graphics g) 
 	{
 		super.paintComponent(g);
+		
+		//identify the subset of the map that will be showing on the screen
 		int vLeft, vRight;
 		int hLeft, hRight;
-		vLeft = 0;
-		hLeft = 0;
-		vRight =intMap.size();
-		//hRight 
 		
 		if (mapX/48 <= 0) hLeft = -mapX/48;
 		else hLeft = 0;
-		hRight = hLeft + 23;
 		
 		if (mapY/48 <= 0) vLeft = -mapY/48;
 		else vLeft = 0;
+		
 		vRight = vLeft + 13;
-		
-		if (vRight > intMap.size()) vRight = intMap.size();
+		hRight = hLeft + 22;
 
-		for (int i = vLeft; i < vRight; i++)
-		{
-			if (hRight > intMap.get(i).size()) hRight = intMap.get(i).size();
-			for (int j = hLeft; j < hRight; j++)
-			{ 
-				if (intMap.get(i).get(j) <= 87 || (intMap.get(i).get(j) >= 93 && intMap.get(i).get(j) <= 97) || intMap.get(i).get(j) >= 101 )
-				{
-					g.drawImage(textures, mapX + j * 48, mapY + i*48, mapX + (j+1) * 48, mapY + (i+1) * 48, 
-						    ((intMap.get(i).get(j))%12)*48, ((intMap.get(i).get(j))/12)*48, 
-						    ((intMap.get(i).get(j))%12+1)*48, ((intMap.get(i).get(j))/12+1)*48, null);
-				}
-			}
-		}
+		if (vRight >= intMap.size()) vRight = intMap.size()-1;
+		if (hRight >= intMap.get(0).size()) hRight = intMap.get(0).size()-1;
+
+		//calls recursive method to draw the subset of the array onto the screen
+		paintMap(vLeft, hLeft, vRight, hRight, g);
 		
+		
+		//draw players and various other entities
 		louis.draw(g);
 		
 		for (int i = 0; i < projectiles.size(); i++)
 			projectiles.get(i).draw(mapX, mapY, g);
 		
-		if (louis.isDead && !cheat)
+		if (louis.getIsDead() && !cheat)
 			for (int i = 0; i < enemies.size(); i++)
 				enemies.get(i).draw(mapX, mapY, g);
 		else
 			for (int i = 0; i < enemies.size(); i++)
-				enemies.get(i).draw(mapX, mapY, g, louis.anim);		
+				enemies.get(i).draw(mapX, mapY, g, louis.getAnim());		
 		
-		if (cheat)
+		if (cheat)//indicates with text whether you are in cheat mode
 			g.drawString("CHEATING", 0, 10);
 	}
-	
+	public void paintMap(int startRow, int startCol, int endRow, int endCol, Graphics g)
+	{
+		paintMap(startRow, startCol, startRow, startCol, endRow, endCol, g);
+	}
+	public void paintMap(int startRow, int startCol, int curRow, int curCol, int endRow, int endCol, Graphics g)
+	{
+	    if (curRow == endRow) return; //base case 
+	    //if the element is to be draw, draw the corresponding image on the spritesheet
+		if (intMap.get(curRow).get(curCol) <= 87 || (intMap.get(curRow).get(curCol) >= 93 && intMap.get(curRow).get(curCol) <= 99) || intMap.get(curRow).get(curCol) >= 105)
+		{
+			g.drawImage(textures, mapX + curCol * 48, mapY + curRow*48, mapX + (curCol+1) * 48, mapY + (curRow+1) * 48, 
+				    ((intMap.get(curRow).get(curCol))%12)*48, ((intMap.get(curRow).get(curCol))/12)*48, 
+				    ((intMap.get(curRow).get(curCol))%12+1)*48, ((intMap.get(curRow).get(curCol))/12+1)*48, null);
+		}
+		
+		//move onto next row if column is complete
+	    if (curCol == endCol)
+	    {
+	        curCol = startCol;
+	        paintMap(startRow, startCol, curRow+1, curCol, endRow, endCol,g);    
+	    }
+	    else if (curCol != endCol)//keep moving through column if incomplete
+	    {
+	    	paintMap(startRow, startCol, curRow, curCol+1, endRow, endCol,g);    
+	    }
+	}
+	//keylistener events
 	public void keyPressed(KeyEvent e) 
 	{
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 			endLevel();
 		else if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
-			louis.left = true;
+			louis.setLeft(true); 
 		else if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
-			louis.right = true;
+			louis.setRight(true);
 		else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_W)
-			if (!louis.inAir || cheat)
+			if (!louis.getInAir() || cheat)//allows cheating player to jump even if he is in the air
 				louis.jump();
 		
 		if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S)
-			if (louis.hover)
+			if (louis.getHover())//if down is pressed while player is hovering over the finish line, end the level
 				endLevel();
 	}
 	public void keyReleased(KeyEvent e) 
 	{
 		if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_A)
-			louis.left = false;
+			louis.setLeft(false); 
 		if (e.getKeyCode() == KeyEvent.VK_RIGHT || e.getKeyCode() == KeyEvent.VK_D)
-			louis.right = false;
+			louis.setRight(false); 
 		if (e.getKeyCode() == KeyEvent.VK_C)
 			cheat = !cheat;
 	}
@@ -220,16 +241,16 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 	
 	public void endLevel()
 	{
-		
 		timer.stop();
 		turretTimer.stop();
 		louis.stopTimer();
-		if (custom != null) tb.changeCard("main");
+		//switch to main menu if it is a custom game, otherwise it will default switch to level select
+		if (custom) tb.changeCard("main");
 		tb.removeLevel();
 
 	}
-	
-	public void loadMap(String k)
+	//load serializable level and images
+	public void load(String k)
 	{
 		BufferedImage [] enemyImages = new BufferedImage[4] ;
 		try {
@@ -239,33 +260,32 @@ public class GamePlay extends JPanel implements KeyListener, ActionListener
 			enemyImages[2] = ImageIO.read(new File("bin/louisenemy.png"));
 			enemyImages[3] = ImageIO.read(new File("bin/cityenemy.png"));
 
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		} catch (IOException e1) {e1.printStackTrace();}
 		
+		//obtain 2d integer arraylist from serializable map file
 		intMap = new ArrayList<ArrayList<Integer>>();
 		
         try{
-            ObjectInputStream is = new ObjectInputStream(new FileInputStream("resources/customlevels/"+k));
+        	ObjectInputStream is;
+        	if (custom)
+        		 is = new ObjectInputStream(new FileInputStream("resources/customlevels/"+k));
+        	else
+        		is = new ObjectInputStream(new FileInputStream("resources/"+k));
             Map m = (Map)is.readObject();
             intMap = m.getIntGrid();
             is.close();
-        }
-        catch(Exception er){
-            er.printStackTrace();
-        }
+        } catch(Exception er){er.printStackTrace();}
         
-        for (int i = 0; i < intMap.size(); i++)
-        	System.out.println(intMap.get(i));
-        		
+        //run through map checking for entities
         for (int i = 0; i < intMap.size(); i++)
         	for (int j = 0; j < intMap.get(i).size(); j++)
         	{
+        		//when code for certain entity is come across, add the entity at appropriate position relative to map origin
         		if (intMap.get(i).get(j) >= 72 && intMap.get(i).get(j) <=87)
         			turrets.add(new Turret(i, j, (intMap.get(i).get(j)-72)%4+1));
         		else if (intMap.get(i).get(j) >= 88 && intMap.get(i).get(j) <= 91)
         			enemies.add(new Enemy(j*48, i* 48, enemyImages[intMap.get(i).get(j)-88]));
-        		else if (intMap.get(i).get(j) == 92)
+        		else if (intMap.get(i).get(j) == 92)//set spawn at ID = 92
         		{
         			initMapX = spawnX - (j) * 48;
         			initMapY = spawnY - (i) * 48;

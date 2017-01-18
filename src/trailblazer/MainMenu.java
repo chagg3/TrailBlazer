@@ -1,3 +1,11 @@
+/* Class by Borna Houmani-Farahani
+ * Main menu panel. Start of game and hub for all other menus/options
+ *   
+ * ICS4U
+ * Ms. Strelkovska
+ * 
+ * 1/17/17
+ */
 package trailblazer;
 
 import java.awt.*;
@@ -11,11 +19,11 @@ import javax.swing.*;
 public class MainMenu extends JPanel implements ActionListener, MouseListener
 {
 
-	private static final long serialVersionUID = 1L;
-	
 	private BufferedImage background, title, optionImage;
 	private BufferedImage [] optionSprites;
+	
 	private JButton [] optionButtons;
+	
 	private TrailBlazer tb;
 	
 	public MainMenu(TrailBlazer tb)
@@ -25,6 +33,7 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		optionSprites = new BufferedImage[8];
 		loadSprites();
 		
+		//creates menu buttons with images, adds listeners, adds them to menu in location specified
 		this.setLayout(null);
 		optionButtons = new JButton[4];
 
@@ -57,6 +66,7 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 	public void mouseClicked(MouseEvent e) {}
 	public void mousePressed(MouseEvent e) {}
 	public void mouseReleased(MouseEvent e) {}
+	//mouseEntered and Exited change button icon when each button is hovered over
 	public void mouseEntered(MouseEvent e) 
 	{
 		for (int i = 0; i < optionButtons.length; i++)
@@ -77,13 +87,15 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 			}
 		}
 	}
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == optionButtons[0])
+	//when buttons are clicked
+	public void actionPerformed(ActionEvent e) 
+	{
+		if (e.getSource() == optionButtons[0])//switch to level select
 			tb.changeCard("level");
-		else if (e.getSource() == optionButtons[1])
+		else if (e.getSource() == optionButtons[1])//switch to level creator
 			tb.changeCard("create");
 
-		//charles wrote this condition
+		//Charles wrote the following condition
 		else if (e.getSource()==optionButtons[2]){
 			File folder = new File("resources/customlevels");
 			 File[] listOfFiles = folder.listFiles();
@@ -103,16 +115,13 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		                         "");
 		     
 		     if ((level != null) && (level.length() > 0)) {
-		    	 System.out.println("load");
 		    	 level+=".txt";
-		    	 System.out.println(level);
-			     tb.newLevel(level, "");
+			     tb.newLevel(level, true); //create a custom game
 			     tb.changeCard("2");
 		     }
 
 		}
-		
-		else if (e.getSource() == optionButtons[3])
+		else if (e.getSource() == optionButtons[3])//exit
 			System.exit(0);
 	}
 	public void loadSprites()
@@ -124,9 +133,9 @@ public class MainMenu extends JPanel implements ActionListener, MouseListener
 		
 		title = optionImage.getSubimage(0, 0, 322, 50);
 		
+		//put individual sprites on the sheet into an array
 		int [] optionWidth = {100,260,290,88};
 		
-		if (optionImage == null) System.out.print(true);
 		
 		for (int i = 0; i < 8; i++)
 			optionSprites[i] = optionImage.getSubimage(0, 52 + 36*i, optionWidth[i/2], 36);

@@ -2,17 +2,16 @@ package trailblazer;
 /*
  * Charles
  * ICS SUMMATIVE TRAIL BLAZER
- * Panel for GUI with scrollbars that will change based on map size
+ * Panel for GUI that will hold the level creator. This panel will listen to all the buttons
+ * mouse, and key actions that will occur within the creator. 
  */
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -22,17 +21,11 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Scanner;
-
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -45,7 +38,7 @@ import javax.swing.SwingUtilities;
 
 public class LevelCreator extends JPanel implements KeyListener, MouseListener, MouseMotionListener, ActionListener, ItemListener{
 
-	
+//declaration for needed variables and objects.	
 	private JButton increaseDown, decreaseUp, increaseRight, decreaseLeft, save, load, exit;
 	private JScrollPane mapScroller;
 	private JTextField nameField;
@@ -56,22 +49,28 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 	private Dimension area;
 	private CardLayout cl;
 	private int blockID;
-	private ImageIcon icon;
+	private ImageIcon louisIcon, finishIcon;
 	private TrailBlazer tb;
-	
+
+//constructor than passes in the main frame
 	public LevelCreator(TrailBlazer tb){
 		super();
 		this.tb = tb;
-		
+	
+	//blockID is the variable that determines which block is placed on the map
+	//when a block is placed
 		blockID = 0;
 		
-		area = new Dimension(661,481);
-		
+	//constructs the left portion of the levelCreator and adds listeners to things that require
+	//it, includes imagePanel that holds the map, and adjustable buttons. Object sizes are
+	//adjusted accordingly.
 		imagePanel = new JPanel();
+		area = new Dimension(661,481);
 		mapPanel = new MapPanel();
 		mapPanel.setPreferredSize(area);
 		mapPanel.addMouseListener(this);
 		mapPanel.addMouseMotionListener(this);
+		mapScroller = new JScrollPane(mapPanel);
 		increaseDown = new JButton("v");
 		increaseDown.setPreferredSize(new Dimension(696,45));
 		increaseDown.addActionListener(this);
@@ -84,42 +83,48 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		decreaseLeft = new JButton("<");
 		decreaseLeft.setPreferredSize(new Dimension(45, 480));
 		decreaseLeft.addActionListener(this);
-		mapScroller = new JScrollPane(mapPanel);
-		System.out.println(imagePanel.getWidth() +" "+ imagePanel.getHeight());
-
+		
+	//adds all components of the left side to imagePanel in border layout. 	
 		imagePanel.setLayout(new BorderLayout());
 		imagePanel.add(mapScroller, BorderLayout.CENTER);
 		imagePanel.add(increaseDown, BorderLayout.SOUTH);
 		imagePanel.add(increaseRight, BorderLayout.EAST);
 		imagePanel.add(decreaseUp, BorderLayout.NORTH);
 		imagePanel.add(decreaseLeft, BorderLayout.WEST);
+	
 		
-		String[] type = {"Blocks","More Blocks","Dangers", "Dangers and Special"};
-		tileType = new JComboBox<>(type);
+	//the right side of the level creator	
+			
+	
+		
+	//finds all of the custom levels, puts them into a string array and removes the last
+	//four characters of the file name, in our case ".txt". Array is then loaded into 
+	//JComboBox
+		File folder = new File("resources/customlevels");
+	    File[] listOfFiles = folder.listFiles();
+	    String[] fileNamesShown = new String[listOfFiles.length];
+	    for (int i = 0; i < listOfFiles.length; i++) {
+	    	String n = listOfFiles[i].getName();
+	        n = n.substring(0, n.length()-4);
+	        fileNamesShown[i]=n;
+	    }
+		levelLoad = new JComboBox<>(fileNamesShown);
+		
+	
+	//constructs the bottom right of the level creator, a panel that holds all the objects
+	//used for saving and loading as well as exit. It consists of two more panels, nameLoad,
+	//and saveLoad, that organizes the other objects in a gridLayout.
+	//Listeners are added, and sizes are adjusted accordingly.
+		saveLoadPanel = new JPanel();
+		saveLoadPanel.setPreferredSize(new Dimension(269,79));
+		saveLoadPanel.setLayout(new GridLayout(2,1));
 		save = new JButton("Save"); 
 		save.addActionListener(this);
 		load = new JButton("Load");
 		load.addActionListener(this);
-		File folder = new File("resources/customlevels");
-	    File[] listOfFiles = folder.listFiles();
-	    String[] fileNames = new String[listOfFiles.length];
-	    String[] fileNamesShown = new String[listOfFiles.length];
-	  // Iterating array of files for printing name of all files present in the directory.
-	    for (int i = 0; i < listOfFiles.length; i++) {
-	    	String n = listOfFiles[i].getName();
-	    	fileNames[i]=n;
-	        n = n.substring(0, n.length()-4);
-	        fileNamesShown[i]=n;
-	        System.out.println(n);
-	    }
-		levelLoad = new JComboBox<>(fileNamesShown);
-		nameField = new JTextField("DefaultFileName");
-		
-		saveLoadPanel = new JPanel();
-		saveLoadPanel.setPreferredSize(new Dimension(269,79));
-		saveLoadPanel.setLayout(new GridLayout(2,1));
 		JPanel nameLoad = new JPanel(new GridLayout(1,2));
 		saveLoadPanel.add(nameLoad);
+		nameField = new JTextField("DefaultFileName");
 		nameLoad.add(nameField);
 		nameLoad.add(levelLoad);
 		JPanel saveLoad = new JPanel(new GridLayout(1,3));
@@ -131,6 +136,9 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		saveLoad.add(exit);
 		
 		
+	//Constructs the panel where the user may select which block they are going to place.
+	//Everything is put in a card layout that will switch between the panels. Selects
+	//first panel shown in the card layout and adds listeners.
 		cl = new CardLayout();
 		tilePanel = new JPanel();
 		blockPanel = new BlockPanel(0);
@@ -141,6 +149,11 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		dangerPanel.addMouseListener(this);
 		entityPanel = new BlockPanel(84);
 		entityPanel.addMouseListener(this);
+	//JCombobox that will help user select the different panels, item listener is added so
+	//panel will switch when user changes item in combo box.
+		String[] type = {"Blocks","More Blocks","Dangers", "Dangers and Special"};
+		tileType = new JComboBox<>(type);
+		tileType.addItemListener(this);
 		tilePanel.setLayout(cl);
 		tilePanel.add(blockPanel, "1");
 		tilePanel.add(blockPanel2, "2");
@@ -148,68 +161,62 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		tilePanel.add(entityPanel, "4");
 		cl.show(tilePanel, "1");
 		
+	//Constructs panel that holds everything on the right side of the level creator	in
+	//border layout
 		functionPanel = new JPanel();
 		functionPanel.setPreferredSize(new Dimension(269,576));
 		functionPanel.setLayout(new BorderLayout());
 		functionPanel.add(tileType, BorderLayout.NORTH);
-		tileType.addItemListener(this);
 		functionPanel.add(tilePanel, BorderLayout.CENTER);
 		functionPanel.add(saveLoadPanel, BorderLayout.SOUTH);
-		
+	
+	//adds the left side and the right side of the level creator togther.		
 		setLayout(new BorderLayout());	
 		add(imagePanel, BorderLayout.CENTER);
 		add(functionPanel, BorderLayout.EAST);
 	
 	}
 	
-
+//action events for buttons
 	@Override
 	public void actionPerformed(ActionEvent e) {
+	//changes back to the main menu when level creator is excited by switching the cards
 		if (e.getSource().equals(exit))
 			tb.changeCard("main");
+	//when the buttons that manipulate the map are increased.	
 		if(e.getSource().equals(increaseRight)||e.getSource().equals(increaseDown)||e.getSource().equals(decreaseLeft)||e.getSource().equals(decreaseUp)){
-			boolean changed = false;
-			
+		
+	//calls methods of the map that will either increase/decrease the width/height 		
 			if(e.getActionCommand().equals("v")){
-				System.out.println("addDown");
 				mapPanel.map.addRow();
 			}
 			else if(e.getActionCommand().equals(">")){
-				System.out.println("addRight");
 				mapPanel.map.addColumn();
 			}
 			else if(e.getActionCommand().equals("^")){
-				System.out.println("removeUp");
 				mapPanel.map.removeRow();
 			}
 			else if(e.getActionCommand().equals("<")){
 				mapPanel.map.removeColumn();
 			}
+		
 			
-		    int this_width = (mapPanel.map.getColumns()*30+1);
-	       // if (this_width > area.width) {
-	            area.width = this_width; 
-	            changed=true;
-	        //}
-	        int this_height = (mapPanel.map.getRows()*30+1);
-	        //if (this_height > area.height) {
-	            area.height = this_height; 
-	            changed=true;
-	        //}
+		//changes area of the map panel, by taking into account number of rows and columns are 
+		//in the current loaded map. Scrollbar is then updated so that appears if map is larger
+		//than panel, and disappears when it is the same size.
+			area.width = (mapPanel.map.getColumns()*30+1);
+	        area.height = (mapPanel.map.getRows()*30+1);       
+			mapPanel.setPreferredSize(area);
+			mapPanel.revalidate();
 			
-			if(changed){
-				mapPanel.setPreferredSize(area);
-				mapPanel.revalidate();
-			}
 			repaint();
 		}
 		
-		
+	//when the save or load button is pressed	
 		if(e.getSource().equals(save)||e.getSource().equals(load)){
-			
-			int ybuffer = 4;
-			int xbuffer = 10;
-			
+		
+		//when save is pressed, number of player blocks are counted and number of finish blocks
+		//are counted, sends out appropriate error message.
 			if(e.getSource().equals(save)){
 			
 				int start = 0;
@@ -225,120 +232,40 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 					}
 				}
 				
-
+			//loads image icons for error messages	
+				if(louisIcon == null)
+					louisIcon = new ImageIcon("bin/louisIcon.png");
+				if(finishIcon == null)
+					finishIcon = new ImageIcon("bin/finishIcon.png");
 				
 				if(start > 1){
-					icon = new ImageIcon("bin/louisIcon.png");
-					JOptionPane.showMessageDialog(tb,
-						    "You cannot have more than one player on your level.",
-						    "Cannot Save.",
-						    JOptionPane.ERROR_MESSAGE, icon);
+					popUp(louisIcon, "You cannot have more than one player on your level.",
+							"Cannot Save.");
 				}
 				else if (start == 0){
-					icon = new ImageIcon("bin/louisIcon.png");
-					JOptionPane.showMessageDialog(tb,
-						    "You must have one player on your level.",
-						    "Cannot Save.",
-						    JOptionPane.ERROR_MESSAGE, icon);
+					popUp(louisIcon, "You must have one player on your level.", "Cannot Save.");
 				}
 				else if(finish == 0){
-					icon = new ImageIcon("bin/finishIcon.png");
-					JOptionPane.showMessageDialog(tb,
-						    "You must have one finish point on your level.",
-						    "Cannot Save.",
-						    JOptionPane.ERROR_MESSAGE,icon);
+					popUp(finishIcon, "You must have at least one finish point on your level.",
+							"Cannot Save.");
 				}
+			
+			//when player has required blocks to save, new file is created by getting 
+			//the current entry in the name text field and adding ".txt".
 				else{
+					
+					
 					String fileName = nameField.getText()+".txt";
 					File newFile = new File("resources/customlevels/"+fileName);
-					System.out.println(newFile.getAbsolutePath());
 					
-					//Serializing the map object
-					try{
-						ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(newFile));
-						os.writeObject(mapPanel.map);
-						os.close();
-					}
-					catch(Exception er){
-						er.printStackTrace();
-					}
-					
+				//boolean for if file already exists, and int overwrite for if user wishes to 
+				//overwrite an already existing file
 					 boolean exists = false;
-					 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-					   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
-					     exists = true;
-					   }
-					 }
-					 if (!exists) {
-					   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
-					 }
-				/*	
-					try{
-						newFile.createNewFile();
-						FileWriter fw = new FileWriter(newFile);
-						BufferedWriter bw = new BufferedWriter(fw);
-						
-						int rows = mapPanel.map.getRows();
-						int columns =  mapPanel.map.getColumns();
-						
-						
-					//write spikes
-						for (int j = 0; j < columns+2*xbuffer+2; j++)
-							bw.write(Character.toString((char)60));
-						bw.newLine();
-					
-					//air buffer	
-						for(int i = 0; i < ybuffer; i++){
-							bw.write(Character.toString((char)60));
-							for (int j = 0; j < columns+2*xbuffer; j++)
-								bw.write(Character.toString((char)100));
-							bw.write(Character.toString((char)60));
-							bw.newLine();
-						}
-			
-						for(int i = 0; i < rows; i++){
-						//wall then spike then air
-							bw.write(Character.toString((char)(60+32)));
-							
-							for(int k = 0; k < xbuffer; k++){
-								bw.write(Character.toString((char)(100+32)));
-							}
-							
-							for(int j = 0; j < columns; j++){
-								char c = (char)(mapPanel.map.getGrid().get(i).get(j).getID()+32);
-								bw.write(Character.toString(c));
-							}
-							
-							for(int k = 0; k < xbuffer; k++){
-								bw.write(Character.toString((char)((100+32))));
-							}
+					 int overwrite = 0;
 				
-							bw.write(Character.toString((char)(60+32)));
-							
-							bw.newLine();
-						}
-						
-					//air buffer	
-						for(int i = 0; i < ybuffer; i++){
-							bw.write(Character.toString((char)(60+32)));
-							for (int j = 0; j < columns+xbuffer*2; j++)
-								bw.write(Character.toString((char)(100+32)));
-							bw.write(Character.toString((char)(60+32)));
-							bw.newLine();
-						}
-						
-					//write spikes
-						for (int j = 0; j < columns+xbuffer*2+2; j++)
-							bw.write(Character.toString((char)(60+32)));
-						bw.newLine();
-						
-						bw.close();
-					}
-					catch(Exception er){
-						System.out.println(er);
-					}
-					
-					boolean exists = false;
+				//checks each item in jcombobox and compares it with string in name field
+				//to find out wheter file already exists, if it does not, add name to
+				//combobox and serialize the map
 					 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
 					   if (nameField.getText().equals(levelLoad.getItemAt(index))) {
 					     exists = true;
@@ -346,74 +273,34 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 					 }
 					 if (!exists) {
 					   levelLoad.addItem(fileName.substring(0,fileName.length()-4));
-					 }/*
-				/*	
-					 boolean exists = false;
-					 for (int index = 0; index < levelLoad.getItemCount() && !exists; index++) {
-					   if (fileName.equals(levelLoad.getItemAt(index))) {
-					     exists = true;
-					   }
 					 }
-					 if (!exists) {
-					   levelLoad.addItem(fileName);
-					 }
-					 */
+				//get user input to overwrite if file already exists 
+					 else{
+							overwrite = JOptionPane.showConfirmDialog(tb,
+									    "This file exists, would you like to overwrite it?",
+									    "Overwrite?",
+									    JOptionPane.YES_NO_OPTION);
+						 }
+					 
+					 if(overwrite == 0){	 
+						//Serializing the map object
+						try{
+							ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(newFile));
+							os.writeObject(mapPanel.map);
+							os.close();
+						}
+						catch(Exception er){
+							er.printStackTrace();
+						}
+					}			
 				}
 			}
-			if(e.getSource().equals(load)){
-				
-				String level = levelLoad.getSelectedItem().toString()+".txt";
-				/*
-				ArrayList<ArrayList<Character>> charMap = new ArrayList<ArrayList<Character>>();
-		        try
-		        {
-		        	System.out.println("hello");
-		            File file = new File("resources/customlevels/"+level);//temporary
-		            System.out.println(file);
-		            Scanner input = new Scanner(file);
-		            while (input.hasNext())
-		            {
-		                String l = input.nextLine();
-		                ArrayList<Character> r = new ArrayList<Character>();
-	
-		                for (int i = 0; i < l.length(); i++)
-		                {
-		                    r.add(l.charAt(i));
-		                }
-	
-		                charMap.add(r);
-		            }
-		            input.close();	
-		            
-		            System.out.println("greetings");
-		           
-		       //removes top and bottom spikes and buffer
-		            for(int i = 0; i < ybuffer+1; i++){
-		            	charMap.remove(0);
-		            	charMap.remove(charMap.size()-1);
-		            }
-		            for (int j = 0; j<charMap.size(); j++){
-		            	for(int k = 0; k<xbuffer+1; k++){
-		            		charMap.get(j).remove(0);
-		            		charMap.get(j).remove(charMap.get(j).size()-1);
-		            	}
-		           	}
-		            
-		            mapPanel.map = new Map(charMap);
-		            System.out.println("goodbye");
-		            repaint();
-		        }
-		        catch(Exception er){
-		        	er.getStackTrace();
-		        }
-			}
-		}	*/
-		}
 		
+	//when file is loaded, reads name of file from jcombobox and unserializes the file back into
+	//a map which is then loaded into the mapPanel, it is then repainted and readjusted.
 		if(e.getSource().equals(load)){
 			
 			String level = levelLoad.getSelectedItem().toString()+".txt";
-			System.out.println(level);
 	
 	        try{
 	        	ObjectInputStream is = new ObjectInputStream(new FileInputStream("resources/customlevels/"+level));
@@ -424,16 +311,20 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 	        catch(Exception er){
 	        	er.printStackTrace();
 	        }
+	        area.width = mapPanel.map.getColumns()*30+1;
+	        area.height = mapPanel.map.getRows()*30+1;
+	        mapPanel.setPreferredSize(area);
+	        mapPanel.revalidate();
 	        repaint();
 			}
 		}
 		
 	}
 	
-	@Override
+//calls on mouse pressed	
+	@Override	
 	public void mouseDragged(MouseEvent e) {
 		mousePressed(e);
-		
 	}
 
 	@Override
@@ -462,13 +353,18 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 	@Override
 	public void mousePressed(MouseEvent e) {
 		
+	//gets the x and y of the mouse	
 		int x = e.getX();
 		int y = e.getY();
-		
+	
+	//if mouse is on map panel, first makes sure mouse is within the mapPanel range, as if mouse
+	//is dragged and leaves the panel, will not get correct spot on map. 
 		if(e.getSource().equals(mapPanel)){
 			if(x/30>=mapPanel.map.getColumns()||x/30<0||y/30>=mapPanel.map.getRows()||y/30<0){
-				System.out.println(false);
 			}
+		//gets position of row and column of mouse on map by dividing x and y by size of the 
+		//blocks. replaces block with a blank if mouse is right clicked and with current 
+		//blockID if it is left clicked.
 			else{
 				if(SwingUtilities.isRightMouseButton(e)){
 					mapPanel.map.changeBlock(x/30,y/30, new Block());
@@ -480,26 +376,21 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 		}
 		
 		
-	//make this code more efficient	
+	//updates the block panels and blockIDs.
 		if(e.getSource().equals(blockPanel)){
-			blockPanel.setSelect(x/67*67, y/67*67);
-			blockID = blockPanel.getBlock(x/67,y/67).getID();
+			blockID = updateID(blockPanel, x, y);
 		}
 		
 		if(e.getSource().equals(blockPanel2)){
-			blockPanel2.setSelect(x/67*67, y/67*67);
-			blockID = blockPanel2.getBlock(x/67,y/67).getID();
-			System.out.println(blockID);
+			blockID = updateID(blockPanel2, x, y);
 		}
 		
 		if(e.getSource().equals(dangerPanel)){
-			dangerPanel.setSelect(x/67*67, y/67*67);
-			blockID = dangerPanel.getBlock(x/67,y/67).getID();
+			blockID = updateID(dangerPanel, x, y);
 		}
 		
 		if(e.getSource().equals(entityPanel)){
-			entityPanel.setSelect(x/67*67, y/67*67);
-			blockID = entityPanel.getBlock(x/67,y/67).getID();
+			blockID = updateID(entityPanel, x, y);
 		}
 		
 		repaint();
@@ -508,43 +399,60 @@ public class LevelCreator extends JPanel implements KeyListener, MouseListener, 
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub	
 	}
-
 	@Override
 	public void keyPressed(KeyEvent arg0) {
 		// TODO Auto-generated method stub
-		
 	}
-
 	@Override
 	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub	
 	}
-
 	@Override
 	public void keyTyped(KeyEvent arg0) {
 		// TODO Auto-generated method stub
 		
 	}
 
-
+//when different block panel is selected from combo box, changes panel, and updates blockID
 	@Override
 	public void itemStateChanged(ItemEvent e) {
-			if(tileType.getSelectedItem().equals("Blocks"))
+			if(tileType.getSelectedItem().equals("Blocks")){
 				cl.show(tilePanel, "1");
-			else if (tileType.getSelectedItem().equals("More Blocks"))
+				blockID = updateID(blockPanel);
+			}
+			else if (tileType.getSelectedItem().equals("More Blocks")){
 				cl.show(tilePanel, "2");
-			else if (tileType.getSelectedItem().equals("Dangers"))
+				blockID = updateID(blockPanel2);
+			}
+			else if (tileType.getSelectedItem().equals("Dangers")){
 				cl.show(tilePanel, "3");
-			else if(tileType.getSelectedItem().equals("Dangers and Special"))
+				blockID = updateID(dangerPanel);
+			}
+			else if(tileType.getSelectedItem().equals("Dangers and Special")){
 				cl.show(tilePanel, "4");
+				blockID = updateID(entityPanel);
+			}
+	}
+	
+	public void popUp(ImageIcon icon, String error, String title){
+		JOptionPane.showMessageDialog(tb, error, title, JOptionPane.ERROR_MESSAGE, icon);
 	}
 
+	public int updateID(BlockPanel bp, int x, int y){
+		bp.setSelect(x/67*67, y/67*67);
+		return bp.getBlock(x/67,y/67).getID();
+	}
+
+//overloaded method that will select and update block id to the first block of the panel
+	public int updateID(BlockPanel bp){
+		return updateID(bp,0,0);
+	}
+	
 }
 
+//jpanel that the map is drawn and which size is dynamic so that a jscroll pane can be used
 class MapPanel extends JPanel{
 	
 	Map map;
@@ -560,6 +468,7 @@ class MapPanel extends JPanel{
 	}
 }
 
+//panel that contains block selections
 class BlockPanel extends JPanel{
 	
 	private Block[][] blockImages;
@@ -578,7 +487,7 @@ class BlockPanel extends JPanel{
  		}
 	}
 	
-
+//set position of red outline
 	public void setSelect(int x, int y){
 		select.setSize(x, y);;
 	}
@@ -587,6 +496,7 @@ class BlockPanel extends JPanel{
 		return blockImages[y][x];
 	}
 	
+//draws blocks, as well as grid, and red outline for currently selected block	
 	public void paintComponent(Graphics g){
 		for(int i = 0; i < 7; i++){
  			for(int j = 0; j<4; j++){

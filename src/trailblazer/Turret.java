@@ -1,3 +1,12 @@
+/* Class by Borna Houmani-Farahani
+ * Level select with buttons leading to 5 premade levels
+ *    
+ * ICS4U
+ * Ms. Strelkovska
+ * 
+ * 1/17/17
+ */
+
 package trailblazer;
 
 public class Turret 
@@ -11,6 +20,7 @@ public class Turret
 		this.j = j;
 		this.direction = direction;
 	}
+	//returns a projectile in a position to be leaving the turrets barrel
 	public Projectile fire()
 	{
 		Projectile n;

@@ -1,3 +1,11 @@
+/* Class by Borna Houmani-Farahani
+ * Used to create instances of projectiles
+ *   
+ * ICS4U
+ * Ms. Strelkovska
+ * 
+ * 1/17/17
+ */
 package trailblazer;
 
 import java.awt.Graphics;
@@ -30,20 +38,16 @@ public class Projectile
 		
 		if (direction % 2 == 1)
 			speed*=-1;
-		
+		//loads textures if they have not been loaded yet
 		if (hTexture == null)
 			try{
 				hTexture =  ImageIO.read(new File("bin/dart.png"));
+				//rotate image to be used when darts are fired up/downwards
 			    AffineTransform tx = new AffineTransform();
 			    tx.rotate(Math.PI/2, 0, hTexture.getHeight()/1);
-			    AffineTransformOp op = new AffineTransformOp(tx,
-			            AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-			        vTexture = op.filter(hTexture, null);
-
-
+			    AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+			    vTexture = op.filter(hTexture, null);
 			}catch(Exception e){e.printStackTrace();}
-		
-
 	}
 	public void travel()
 	{
@@ -52,9 +56,9 @@ public class Projectile
 		else
 			y += speed;
 	}
+	//draws dart in appropriate orientation
 	public void draw(int mapX, int mapY, Graphics g)
 	{
-
 		if (direction == 1)
 			g.drawImage(hTexture, mapX + x, mapY + y, mapX + x + 17, mapY + y + 7, 17, 0, 0, 7, null);
 		else if (direction == 2)
@@ -64,6 +68,7 @@ public class Projectile
 		else
 			g.drawImage(vTexture, mapX + x, mapY + y - 7 , null);
 	}
+	//checks collision with solid objects. returns true when it has collided with something
 	public boolean checkCol(ArrayList<ArrayList<Integer>> intMap, int mapX, int mapY)
 	{
 		Rectangle current = getRectangle(mapX, mapY);
@@ -80,13 +85,14 @@ public class Projectile
 
 		return false;
 	}
+	//returns rectangle based on the orientation and position of the dart
 	public Rectangle getRectangle(int mapX, int mapY)
 	{
 		Rectangle r;
 		if (direction <= 2)
-			r = new Rectangle(mapX + x + buffer, mapY + y + buffer, 17 - buffer, 7 - buffer);
+			r = new Rectangle(mapX + x, mapY + y , 17 , 7 );
 		else
-			r = new Rectangle(mapX + x + buffer, mapY + y + buffer, 7 - buffer, 17- buffer);
+			r = new Rectangle(mapX + x , mapY + y , 7 , 17);
 		
 		return r;
 	}
